@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}电影推荐系统{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+        background-image: url('https://images.unsplash.com/photo-1746990263194-0e2826fed608?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: Arial, sans-serif;
+    }
+        /* 登录框样式 */
+        #login_box {
+            width: 400px;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.6);
+            margin: auto;
+            margin-top: 10%;
+            text-align: center;
+            border-radius: 10px;
+            padding: 50px;
+            color: white;
+            display: none; /* 默认隐藏 */
+        }
+
+        #login_box h2 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 20px;
+        }
+
+        #login_box input {
+            border: 0;
+            width: 80%;
+            font-size: 15px;
+            color: #fff;
+            background: transparent;
+            border-bottom: 2px solid #fff;
+            padding: 10px;
+            outline: none;
+            margin-top: 20px;
+        }
+
+        #login_box input::placeholder {
+            color: #ccc;
+        }
+
+        #login_box button {
+            margin-top: 40px;
+            width: 80%;
+            height: 40px;
+            border-radius: 20px;
+            border: 0;
+            color: #fff;
+            background: linear-gradient(to right, #30cfd0, #330867);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #login_box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .error {
+            color: #ff4757;
+            margin-top: 10px;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- 登录窗口 -->
+    <div id="login_box">
+        <h1>电影推荐系统</h1>
+        <h2>用户登录</h2>
+        <div>
+            <input type="text" id="username" placeholder="请输入用户名">
+        </div>
+        <div>
+            <input type="password" id="password" placeholder="请输入密码">
+        </div>
+        <button onclick="login()">登录</button>
+        <p id="login-error" class="error" style="display: none;">用户名或密码错误</p>
+    </div>
+
+    <div id="app_content" style="display: none;">
+        <header class="main-header">
+            <h1>电影推荐系统</h1>
+            <nav>
+                <a href="/">首页</a>
+                <a href="/admin">后台管理</a>
+                <a href="#" onclick="logout()" style="color: #ff4757;">退出登录</a>
+            </nav>
+        </header>
+
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer class="main-footer">
+            <p>电影推荐系统 &copy; 姜佳辰</p>
+        </footer>
+    </div>
+
+    <script>
+    // 页面加载时检查登录状态
+    window.onload = function () {
+        if (localStorage.getItem("loggedIn") === "true") {
+            document.getElementById('login_box').style.display = 'none';
+            document.getElementById('app_content').style.display = 'block';
+        } else {
+            document.getElementById('login_box').style.display = 'block';
+        }
+    };
+
+    // 登录函数
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const loginError = document.getElementById('login-error');
+
+        if (username === 'admin' && password === 'password') {
+            localStorage.setItem("loggedIn", "true");
+            document.getElementById('login_box').style.display = 'none';
+            document.getElementById('app_content').style.display = 'block';
+        } else {
+            loginError.style.display = 'block';
+        }
+    }
+
+    // 登出函数
+    function logout() {
+        localStorage.removeItem("loggedIn");
+        document.getElementById('login_box').style.display = 'block';
+        document.getElementById('app_content').style.display = 'none';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('login-error').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

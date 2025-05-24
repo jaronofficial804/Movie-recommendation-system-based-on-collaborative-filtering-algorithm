@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}后台管理 - {{ super() }}{% endblock %}
+
+{% block content %}
+<h1>电影推荐系统后台管理</h1>
+
+<div class="dashboard">
+    <div class="stats-card">
+        <h3>电影总数</h3>
+        <p class="stat-value">{{ stats.total_movies }}</p>
+    </div>
+    
+    <div class="stats-card">
+        <h3>用户总数</h3>
+        <p class="stat-value">{{ stats.total_users }}</p>
+    </div>
+    
+    <div class="stats-card">
+        <h3>评分总数</h3>
+        <p class="stat-value">{{ stats.total_ratings }}</p>
+    </div>
+    
+    <div class="stats-card">
+        <h3>平均评分</h3>
+        <p class="stat-value">{{ "%.2f"|format(stats.avg_rating) }}</p>
+    </div>
+    
+    <div class="stats-card">
+        <h3>最早评分</h3>
+        <p class="stat-value">{{ stats.first_rating }}</p>
+    </div>
+    
+    <div class="stats-card">
+        <h3>最近评分</h3>
+        <p class="stat-value">{{ stats.last_rating }}</p>
+    </div>
+</div>
+
+<div class="chart-row">
+    <div class="chart-container">
+        <h2>电影时长分布</h2>
+        <canvas id="durationChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h2>评分分布</h2>
+        <canvas id="ratingChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-row">
+    <div class="chart-container">
+        <h2>评分时间趋势</h2>
+        <canvas id="timeChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h2>活跃用户TOP10</h2>
+        <canvas id="userChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-row">
+    <div class="chart-container full-width">
+        <h2>电影类型统计</h2>
+        <div class="chart-wrapper">
+            <canvas id="genreChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<style>
+    .full-width {
+        width: 100%;
+    }
+    .chart-wrapper {
+        position: relative;
+        height: 500px;
+        width: 100%;
+    }
+</style>
+
+<script>
+    // 时长分布图表
+    const durationCtx = document.getElementById('durationChart').getContext('2d');
+    new Chart(durationCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ duration_labels|tojson }},
+            datasets: [{
+                data: {{ duration_data|tojson }},
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            }]
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw}部 (${((context.raw/{{ stats.total_movies }})*100).toFixed(1)}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 评分分布图表
+    const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+    new Chart(ratingCtx, {
+        type: 'bar',
+        data: {
+            labels: ['1星', '2星', '3星', '4星', '5星'],
+            datasets: [{
+                label: '评分数量',
+                data: {{ rating_distribution|tojson }},
+                backgroundColor: '#36A2EB'
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw}次 (${((context.raw/{{ stats.total_ratings }})*100).toFixed(1)}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 时间趋势图表
+    const timeCtx = document.getElementById('timeChart').getContext('2d');
+    new Chart(timeCtx, {
+        type: 'line',
+        data: {
+            labels: {{ time_labels|tojson }},
+            datasets: [{
+                label: '评分数量',
+                data: {{ time_data|tojson }},
+                borderColor: '#FF6384',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                fill: true
+            }]
+        }
+    });
+
+    // 活跃用户图表
+    const userCtx = document.getElementById('userChart').getContext('2d');
+    new Chart(userCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ active_users_labels|tojson }},
+            datasets: [{
+                label: '评分数量',
+                data: {{ active_users_data|tojson }},
+                backgroundColor: '#4BC0C0'
+            }]
+        }
+    });
+
+    // 类型统计图表 - 增强版
+    const genreCtx = document.getElementById('genreChart').getContext('2d');
+
+    // 扩展的颜色方案
+    const genreColorPalette = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#8AC24A', '#607D8B', '#F06292', '#7986CB',
+        '#4DB6AC', '#81C784', '#FFD54F', '#FF8A65', '#A1887F',
+        '#90A4AE', '#BA68C8', '#64B5F6', '#4DD0E1', '#AED581',
+        '#DCE775', '#FFB74D', '#FF7043', '#E57373', '#9575CD',
+        '#4FC3F7', '#F48FB1', '#CE93D8', '#B39DDB', '#9FA8DA',
+        '#80DEEA', '#80CBC4', '#A5D6A7', '#C5E1A5', '#E6EE9C',
+        '#FFF59D', '#FFE082', '#FFCC80', '#FFAB91', '#BCAAA4'
+    ];
+
+    // 动态生成颜色数组
+    const genreColors = [];
+    const genreCount = {{ genre_labels|length }};
+    for (let i = 0; i < genreCount; i++) {
+        genreColors.push(genreColorPalette[i % genreColorPalette.length]);
+    }
+
+    new Chart(genreCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ genre_labels|tojson }},
+            datasets: [{
+                data: {{ genre_data|tojson }},
+                backgroundColor: genreColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = {{ stats.total_movies }};
+                            const percentage = (context.raw / total * 100).toFixed(1);
+                            return `${context.label}: ${context.raw}部 (${percentage}%)`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'right',
+                    align: 'start',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            cutout: '50%',
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+</script>
+{% endblock %}
