@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}后台管理 - {{ super() }}{% endblock %}
+
+{% block content %}
+<style>
+.container {
+    max-width: none !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+</style>
+<div class="admin-layout">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">管理中心</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link{% if active_tab=='dashboard' %} active{% endif %}">仪表盘</a>
+            <a href="{{ url_for('admin_people_stats') }}" class="sidebar-link{% if active_tab=='people' %} active{% endif %}">人物统计</a>
+            <a href="{{ url_for('admin_movies') }}" class="sidebar-link{% if active_tab=='movies' %} active{% endif %}">电影管理</a>
+            <a href="{{ url_for('admin_users') }}" class="sidebar-link{% if active_tab=='users' %} active{% endif %}">用户管理</a>
+            <a href="{{ url_for('admin_comments') }}" class="sidebar-link{% if active_tab=='comments' %} active{% endif %}">评论管理</a>
+            <a href="{{ url_for('admin_feedback') }}" class="sidebar-link{% if active_tab=='feedback' %} active{% endif %}">反馈/消息管理</a>
+
+        </nav>
+    </aside>
+
+    <!-- 主内容区：所有子页面都在这里插入自己的内容 -->
+    <main class="admin-main">
+        {% block admin_main %}{% endblock %}
+    </main>
+</div>
+
+<style>
+body { background: #f8fafd !important; }
+.admin-layout { display: flex; min-height: 100vh; }
+
+/* 侧边栏固定，主区自动填满 */
+.admin-sidebar {
+    width: 225px;
+    background: linear-gradient(120deg,#f1f6fb 85%,#e5eefb 100%);
+    box-shadow: 1px 0 18px #b7cfff0a;
+    padding: 0 0 20px 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1.5px solid #e0e6f1;
+}
+.sidebar-header { display: flex; align-items: center; gap: 12px; padding: 30px 24px 18px 28px; font-size: 1.18em; color: #1675d6; font-weight: bold; letter-spacing: 1.5px; }
+.sidebar-title { font-size: 1.11em; }
+.sidebar-nav { display: flex; flex-direction: column; margin: 18px 0 24px 0; gap: 6px; padding-left: 18px; }
+.sidebar-link { display: block; color: #1869c6; background: none; font-size: 1.03em; padding: 11px 0 11px 8px; border-radius: 7px 20px 20px 7px; font-weight: 500; transition: background 0.16s, color 0.14s; text-decoration: none; }
+.sidebar-link.active, .sidebar-link:hover { background: #e1effc; color: #17968e; }
+
+.admin-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    background: #f8fafd;
+    padding: 34px 3vw 38px 3vw;
+    box-sizing: border-box;
+    animation: fadeInAdmin .18s;
+}
+
+@keyframes fadeInAdmin { from { opacity: .38; transform: translateY(18px);} to { opacity: 1; transform: none;} }
+
+/* 卡片和表格都自动填满父容器（去掉max-width, margin） */
+.dashboard,
+.chart-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px 26px;
+    margin-bottom: 38px;
+}
+
+.stats-card, .chart-container {
+    flex: 1 1 220px;
+    min-width: 220px;
+    max-width: 100%;
+    background: #fff;
+    box-shadow: 0 2px 16px #dae6ff15;
+    border-radius: 14px;
+    padding: 28px 24px 18px 24px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.chart-container.full-width, .chart-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.chart-wrapper { position: relative; height: 500px; width: 100%; }
+
+/* 通用后台表单区、表格铺满父区 */
+.admin-section {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px #dae6ff12;
+    padding: 30px 32px 28px 32px;
+    margin-bottom: 32px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.admin-table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 10px #e6f1fd1b; border-radius: 6px; overflow: hidden; }
+.admin-table th, .admin-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f2f6; }
+.admin-table th { background: #f7fbff; font-weight: 600; color: #20639b; }
+.btn, .btn-sm { display: inline-block; padding: 8px 16px; background: #31afff; color: #fff; border-radius: 5px; font-size: 14px; text-decoration: none; border: none; cursor: pointer; transition: background .14s;}
+.btn:hover, .btn-sm:hover { background: #1790d7; }
+.btn-sm { padding: 5px 11px; font-size: 13px; margin-right: 4px; }
+.btn.danger, .btn-sm.danger { background: #f46e6e; }
+.admin-actions { margin-bottom: 14px; }
+.table-responsive { overflow-x:auto; }
+.pagination a, .pagination span { display:inline-block;margin:0 6px 0 0; color:#17968e; text-decoration:none; }
+
+/* 响应式优化：移动端也自动撑满 */
+@media (max-width: 1200px) {
+    .admin-main { padding: 20px 2vw; }
+    .dashboard, .chart-row { gap: 14px 2vw; }
+    .stats-card, .chart-container { min-width: 160px; padding: 16px 8px 8px 10px; }
+}
+@media (max-width: 900px) {
+    .admin-layout { flex-direction: column; }
+    .admin-sidebar { width: 100%; flex-direction: row; border-right: none; border-bottom: 1.5px solid #e0e6f1;}
+    .admin-main { padding: 12px 2vw; }
+}
+
+
+</style>
+{% endblock %}

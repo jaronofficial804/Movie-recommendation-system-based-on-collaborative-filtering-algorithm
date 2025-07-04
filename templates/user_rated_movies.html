@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn{% if active_tab == 'hot' %} active{% endif %}">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn{% if active_tab == 'recommend' %} active{% endif %}">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn{% if active_tab == 'rated' %} active{% endif %}">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn{% if active_tab == 'filter' %} active{% endif %}">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn{% if active_tab == 'comments' %} active{% endif %}">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+</div>
+
+<div class="section slider-section">
+    <h2 style="color:#fff;text-align:center;font-size:2rem;margin-bottom:34px;font-weight:900;letter-spacing:1.2px;">
+        用户 {{ user_id }} 的已评分电影
+    </h2>
+    <div class="slider-wrap">
+        <div class="movie-slider" id="movie-slider">
+            {% for movie in rated_movies %}
+            <div class="slider-card">
+                <div class="slider-card-content">
+                    <div class="slider-title">{{ movie.title }} <span style="font-weight:400;">({{ movie.year }})</span></div>
+                    <div class="slider-meta">
+                        <span>评分: {{ movie.rating }}</span> |
+                        <span>IMDb: {{ movie.imdb_rating }}</span>
+                    </div>
+                    <div class="slider-detail">
+                        <span>时长: {{ movie.duration }}</span><br>
+                        <span>类型: {{ movie.genre }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block head %}
+<style>
+
+
+
+.slider-section {
+    background: none;
+    box-shadow: none;
+    margin: 0 auto;
+    padding: 24px 0 60px 0;
+    max-width: 1180px;
+    display: flex;               /* 确保flex布局 */
+    flex-direction: column;      /* 新增 */
+    align-items: center;         /* 新增 */
+}
+.slider-wrap {
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0;
+    overflow: visible;
+    position: relative;
+    display: flex;           /* 新增 */
+    justify-content: center;
+    left: 15px; /* 新增：向右微调15像素补偿偏移 */
+}
+.movie-slider {
+    position: relative;
+    width: 750px;               /* 固定宽度确保居中 */
+    min-height: 370px;
+    user-select: none;
+    perspective: 1200px;
+    margin: 60px auto 0;       /* 上边距60px，左右auto居中 */
+}
+.slider-card {
+    min-width: 320px;
+    max-width: 360px;
+    width: 44vw;
+    min-height: 300px;
+    background: rgba(35,44,58,0.84);
+    color: #eaf6ff;
+    border-radius: 24px;
+    margin: 0 -72px;
+    box-shadow: 0 7px 54px 0 #00e2ff22, 0 3px 24px #13203326;
+    position: absolute;
+    top: 55%;                  /* 垂直位置55% */
+    left: calc(50% + 60px); /* 关键调整：向右补偿8像素 */               /* 水平居中 */
+    opacity: 0.16;
+    transform: translate(-50%, -50%) scale(0.75) rotateY(0deg);
+    z-index: 1;
+    transition:
+        opacity 0.42s cubic-bezier(.27,1.14,.56,.96),
+        transform 0.55s cubic-bezier(.21,1.11,.61,1.01),
+        box-shadow 0.36s;
+    cursor: pointer;
+    pointer-events: none;
+    backdrop-filter: blur(6px) saturate(120%);
+    border: 1.2px solid rgba(145,195,255,0.11);
+}
+.slider-card-content {
+    padding: 38px 26px 28px 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.18em;
+}
+.slider-title {
+    font-size: 2em;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+    text-align: center;
+    text-shadow: 0 3px 16px #2ac6f726;
+}
+.slider-meta {
+    color: #39c1ff;
+    font-size: 1.04em;
+    margin-bottom: 9px;
+    font-weight: 500;
+}
+.slider-detail {
+    font-size: .99em;
+    color: #b6d4f7;
+    opacity: .82;
+    text-align: center;
+}
+.slider-card.active {
+    opacity: 1;
+    box-shadow: 0 16px 54px #67d9fc66, 0 5px 32px #234be522, 0 2px 18px #59a6ff33, 0 0 54px #40e8ff42;
+    transform: translate(-50%, -50%) scale(1.13) rotateY(0deg);
+    z-index: 3;
+    pointer-events: auto;
+    border: 1.8px solid #aef3fa4a;
+    filter: drop-shadow(0 0 24px #24e4fa42);
+}
+.slider-card.prev, .slider-card.next {
+    opacity: 0.7;
+    transform: translate(-145%, -50%) scale(0.97) rotateY(19deg);
+    z-index: 2;
+    pointer-events: auto;
+    border: 1.2px solid rgba(145,195,255,0.11);
+    filter: none;
+}
+.slider-card.next {
+    transform: translate(45%, -50%) scale(0.97) rotateY(-19deg);
+}
+.slider-card.hide {
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    filter: none;
+}
+@media (max-width:900px) {
+    .slider-card, .slider-card.active, .slider-card.prev, .slider-card.next {
+        min-width: 88vw;
+        max-width: 99vw;
+    }
+    .slider-card-content { font-size: .97em; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = Array.from(document.querySelectorAll('.slider-card'));
+    let center = Math.max(0, Math.floor(cards.length/2));
+    function render() {
+        cards.forEach((card, idx) => {
+            card.className = 'slider-card hide';
+            card.style.zIndex = 1;
+        });
+        if(cards.length===0) return;
+        // 中间
+        cards[center].className = 'slider-card active';
+        cards[center].style.zIndex = 3;
+        // 左右
+        if(center>0) {
+            cards[center-1].className = 'slider-card prev';
+            cards[center-1].style.zIndex = 2;
+        }
+        if(center<cards.length-1) {
+            cards[center+1].className = 'slider-card next';
+            cards[center+1].style.zIndex = 2;
+        }
+    }
+    render();
+
+    function goNext() { if(center<cards.length-1) { center++; render(); } }
+    function goPrev() { if(center>0) { center--; render(); } }
+
+    // 鼠标滚轮/左右键
+    let lastScroll = 0;
+    document.getElementById('movie-slider').addEventListener('wheel', e => {
+        e.preventDefault();
+        let now = Date.now();
+        if(now-lastScroll<220) return;
+        lastScroll = now;
+        if(e.deltaY>0 || e.deltaX>0) goNext();
+        else if(e.deltaY<0 || e.deltaX<0) goPrev();
+    }, {passive:false});
+    document.addEventListener('keydown', e => {
+        if(e.key==='ArrowLeft') goPrev();
+        if(e.key==='ArrowRight') goNext();
+    });
+
+    // 卡片点击
+    cards.forEach((card, idx) => {
+        card.addEventListener('click', function(){
+            if(idx===center) return;
+            center = idx;
+            render();
+        });
+    });
+});
+</script>
+{% endblock %}

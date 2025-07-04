@@ -1,0 +1,73 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section">
+    <div class="admin-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="margin-bottom:0;">电影管理</h2>
+        <form action="{{ url_for('search_movies') }}" method="GET" class="search-form" style="display:flex;gap:7px;">
+            <input type="text" name="q" placeholder="搜索电影..." class="search-input" value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="search-button">搜索</button>
+        </form>
+    </div>
+
+    <div class="admin-actions" style="margin-bottom:12px;">
+        <a href="{{ url_for('admin_add_movie') }}" class="btn">添加新电影</a>
+    </div>
+
+    <div class="table-responsive">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>年份</th>
+                <th>时长</th>
+                <th>类型</th>
+                <th>IMDb评分</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td>{{ movie.movie_id }}</td>
+                <td>{{ movie.title }}</td>
+                <td>{{ movie.year }}</td>
+                <td>{{ movie.duration }}</td>
+                <td>{{ movie.genre }}</td>
+                <td>{{ movie.imdb_rating }}</td>
+                <td>
+                    <a href="{{ url_for('admin_movie_detail', movie_id=movie.movie_id) }}" class="btn-sm">查看</a>
+                    <a href="{{ url_for('admin_edit_movie', movie_id=movie.movie_id) }}" class="btn-sm">编辑</a>
+                    <form action="{{ url_for('admin_delete_movie', movie_id=movie.movie_id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn-sm danger" onclick="return confirm('确定要删除这部电影吗？')">删除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <div class="pagination" style="margin-top:16px;">
+        {% if current_page > 1 %}
+            <a href="{{ url_for('admin_movies', page=current_page-1) }}">&laquo; 上一页</a>
+        {% endif %}
+        <span>第 {{ current_page }} 页 / 共 {{ total_pages }} 页</span>
+        {% if current_page < total_pages %}
+            <a href="{{ url_for('admin_movies', page=current_page+1) }}">下一页 &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.admin-table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 10px #e6f1fd1b; border-radius: 6px; overflow: hidden; }
+.admin-table th, .admin-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f2f6; }
+.admin-table th { background: #f7fbff; font-weight: 600; color: #20639b; }
+.btn-sm { display: inline-block; padding: 5px 11px; background: #31afff; color: #fff; border-radius: 5px; font-size: 13px; text-decoration: none; border: none; cursor: pointer; margin-right: 4px; transition: background .14s;}
+.btn-sm.danger { background: #f46e6e; }
+.btn-sm:hover { background: #1790d7; }
+.table-responsive { overflow-x:auto; }
+.pagination a, .pagination span { display:inline-block;margin:0 6px 0 0; color:#17968e; text-decoration:none; }
+</style>
+{% endblock %}

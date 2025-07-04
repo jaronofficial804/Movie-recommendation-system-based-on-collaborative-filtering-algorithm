@@ -1,0 +1,46 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section" style="max-width:900px;margin:auto;">
+    <h2 style="margin-bottom:18px;">用户详情 - 用户 {{ user_id }}</h2>
+
+    <div class="admin-actions" style="margin-bottom:16px;">
+        <a href="{{ url_for('admin_add_rating') }}" class="btn">添加新评分</a>
+    </div>
+
+    <h3 style="margin-top:22px;">评分记录</h3>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>电影ID</th>
+                    <th>电影标题</th>
+                    <th>评分</th>
+                    <th>评分日期</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rating in ratings %}
+                <tr>
+                    <td>{{ rating.movie_id }}</td>
+                    <td>{{ rating.title }} ({{ rating.year }})</td>
+                    <td>{{ rating.rating }}</td>
+                    <td>{{ rating.rating_date }}</td>
+                    <td>
+                        <form action="{{ url_for('admin_delete_rating') }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="user_id" value="{{ user_id }}">
+                            <input type="hidden" name="movie_id" value="{{ rating.movie_id }}">
+                            <button type="submit" class="btn-sm danger" onclick="return confirm('确定要删除这条评分吗？')">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<style>
+.table-responsive { overflow-x:auto; }
+</style>
+{% endblock %}

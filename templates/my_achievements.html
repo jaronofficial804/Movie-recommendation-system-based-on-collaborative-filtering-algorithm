@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn{% if active_tab == 'hot' %} active{% endif %}">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn{% if active_tab == 'recommend' %} active{% endif %}">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn{% if active_tab == 'rated' %} active{% endif %}">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn{% if active_tab == 'filter' %} active{% endif %}">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn{% if active_tab == 'comments' %} active{% endif %}">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+</div>
+
+<!-- section用毛玻璃半透明白，内边距略宽，整体更高级 -->
+<div class="section achievements-section">
+    <h2 style="text-align:center; font-size:2rem; margin-bottom:30px; color:#2a3240; font-weight:900; letter-spacing:1.2px; opacity:0.95;">
+        我的成就
+    </h2>
+    <div class="achievements-list">
+        {% for ach in achievements %}
+        <div class="achievement-longcard{{ ' locked' if not ach.unlocked }}" style="--color:{{ ach.color }}">
+            <div class="badge-longicon" style="background: linear-gradient(100deg, var(--color) 55%, #fff 100%);">
+                <span style="font-size:2.3em;">{{ ach.icon }}</span>
+            </div>
+            <div class="long-badge-info">
+                <div class="long-badge-title">{{ ach.title }}</div>
+                <div class="long-badge-desc">{{ ach.desc }}</div>
+            </div>
+            {% if not ach.unlocked %}
+                <div class="badge-status">未解锁</div>
+            {% else %}
+                <div class="badge-status" style="color:var(--color);">已获得</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+/* 让大板块带玻璃拟态和过渡阴影 */
+.achievements-section.section {
+    background: rgba(255,255,255,0.55);
+    border-radius: 22px;
+    box-shadow: 0 8px 38px 0 rgba(34,54,120,0.11), 0 2px 16px rgba(0,0,0,0.05);
+    border: 1.8px solid rgba(255,255,255,0.19);
+    backdrop-filter: blur(13px);
+    padding: 42px 0 36px 0;
+    max-width: 900px;
+    margin: 36px auto 30px auto;
+    transition: box-shadow 0.22s, background 0.28s;
+    position: relative;
+}
+/* 卡片柔和阴影 */
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    padding: 0 24px; /* 留白别贴边 */
+}
+.achievement-longcard {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(52,152,219,0.09), 0 1.5px 6px rgba(0,0,0,0.06);
+    padding: 18px 34px 18px 24px;
+    border-left: 7px solid var(--color, #3498db);
+    min-height: 82px;
+    transition: box-shadow 0.15s, transform 0.13s, filter 0.2s;
+    position: relative;
+}
+/* 未解锁柔灰+磨砂，已解锁正常色 */
+.achievement-longcard.locked {
+    filter: grayscale(0.75) opacity(0.45);
+    background: rgba(232,234,238,0.83);
+    border-left: 7px solid #bbb;
+}
+.achievement-longcard.locked .badge-longicon {
+    filter: grayscale(0.85) opacity(0.70);
+}
+.achievement-longcard:hover:not(.locked) {
+    box-shadow: 0 6px 32px rgba(52,152,219,0.12), 0 2px 12px rgba(0,0,0,0.08);
+    transform: scale(1.017) translateY(-1.3px);
+}
+.badge-longicon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 28px;
+    font-size: 2em;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(52,152,219,0.09);
+    position: relative;
+    background: linear-gradient(120deg, var(--color) 55%, #f9fafb 100%);
+    z-index: 1;
+}
+.long-badge-info {
+    flex: 1;
+    min-width: 0;
+}
+.long-badge-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #23324d;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+.long-badge-desc {
+    color: #5a6b7d;
+    font-size: 1.03em;
+    word-break: break-all;
+}
+.badge-status {
+    font-size: 1em;
+    font-weight: 600;
+    margin-left: 22px;
+    color: #aaa;
+}
+.achievement-longcard:not(.locked) .badge-status {
+    color: var(--color);
+    font-weight: bold;
+}
+@media (max-width: 700px) {
+    .section, .achievements-section.section { padding: 6px; }
+    .achievement-longcard {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 10px;
+        gap: 7px;
+    }
+    .badge-status { margin-left: 0; margin-top: 6px;}
+    .badge-longicon { margin-bottom: 6px; margin-right: 0;}
+    .achievements-list { padding: 0 4px;}
+}
+</style>
+{% endblock %}

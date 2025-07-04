@@ -1,0 +1,64 @@
+{% extends "admin.html" %}
+{% block admin_main %}
+<div class="admin-section">
+    <h2>搜索结果</h2>
+    <div class="search-summary">
+        <span>搜索类型: {{ search_type }}</span>
+        <span style="margin-left:18px;">查询: "{{ query }}"</span>
+        <span style="margin-left:18px;">找到 {{ total }} 条结果</span>
+    </div>
+    {% if search_type == 'movie' %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>标题</th>
+                    <th>年份</th>
+                    <th>时长</th>
+                    <th>类型</th>
+                    <th>IMDb评分</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in results %}
+                <tr>
+                    <td>{{ movie.movie_id }}</td>
+                    <td>{{ movie.title }}</td>
+                    <td>{{ movie.year }}</td>
+                    <td>{{ movie.duration }}</td>
+                    <td>{{ movie.genre }}</td>
+                    <td>{{ movie.imdb_rating }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_movie_detail', movie_id=movie.movie_id) }}" class="btn-sm">查看</a>
+                        <a href="{{ url_for('admin_edit_movie', movie_id=movie.movie_id) }}" class="btn-sm">编辑</a>
+                        <form action="{{ url_for('admin_delete_movie', movie_id=movie.movie_id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn-sm danger" onclick="return confirm('确定要删除这部电影吗？')">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif search_type == 'user' %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>用户ID</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in results %}
+                <tr>
+                    <td>{{ user.user_id }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_user_detail', user_id=user.user_id) }}" class="btn-sm">查看详情</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

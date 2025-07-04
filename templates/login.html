@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>登录 - 电影推荐系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: url('https://images.unsplash.com/photo-1749276873098-7e44bd10575c?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            animation: fadeInBg 1.4s;
+        }
+        @keyframes fadeInBg {
+            from { filter: blur(16px) brightness(0.7);}
+            to   { filter: blur(0) brightness(1);}
+        }
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            width: 790px;
+            max-width: 98vw;
+            margin: 0 auto;
+            min-height: 440px;
+            background: rgba(44,62,80,0.82);
+            border-radius: 26px;
+            box-shadow: 0 10px 32px #1a2e3b38, 0 2px 18px #0002;
+            overflow: hidden;
+            animation: fadeIn 0.8s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(36px);}
+            to   { opacity: 1; transform: none;}
+        }
+        .login-container {
+            border-radius: 0;
+            border-right: 1.5px solid rgba(255,255,255,0.13);
+            border-left: none;
+            border-top: none;
+            border-bottom: none;
+            box-shadow: none;
+            min-width: 340px;
+            width: 340px;
+            max-width: 95vw;
+            min-height: 360px;
+            background: rgba(44,62,80,0.75);
+            padding: 52px 34px 38px 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-logo {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,#0099f7 0%,#f11712 100%);
+            box-shadow: 0 4px 14px #0099f7aa;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-logo img {
+            width: 38px;
+            height: 38px;
+            filter: drop-shadow(0 2px 4px #fff9);
+        }
+        .login-container h1 {
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 2.15rem;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            text-shadow: 0 2px 14px #3338;
+        }
+        .login-container select,
+        .login-container input {
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 13px;
+            border: none;
+            border-radius: 9px;
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: background 0.2s;
+        }
+        .login-container select {
+            color: #fff !important;
+            background: rgba(40,50,60,0.35) !important;
+            border: none;
+            border-radius: 9px;
+            box-shadow: 0 2px 12px #0001;
+            padding: 13px;
+            font-size: 16px;
+            margin-bottom: 18px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            outline: none;
+            transition: background 0.22s, color 0.22s;
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><polyline points="5,8 10,13 15,8" fill="none" stroke="white" stroke-width="2"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 18px 18px;
+            padding-right: 36px;
+        }
+        .login-container select:focus {
+            background: rgba(40,80,120,0.42) !important;
+            color: #fff !important;
+        }
+        .login-container select option {
+            color: #222;
+            background: #f2f4fa;
+        }
+        .login-container input::placeholder {
+            color: #d7e1ec;
+        }
+        .login-container button {
+            width: 100%;
+            background: linear-gradient(92deg, #02aab0 0%, #00cdac 100%);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 9px;
+            font-size: 18px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            box-shadow: 0 2px 16px #02aab066;
+            transition: background 0.24s, transform 0.18s;
+        }
+        .login-container button:hover {
+            background: linear-gradient(90deg, #00cdac 0%, #02aab0 100%);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .error {
+            background: rgba(255,71,87,0.13);
+            border-left: 4px solid #ff4757;
+            color: #ff4757;
+            padding: 8px 12px;
+            margin-top: 12px;
+            margin-bottom: -8px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 15px;
+            text-align: left;
+        }
+        .login-side-img {
+            flex: 1 1 0%;
+            min-width: 320px;
+            background: #111a2c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 380px;
+            padding: 0;
+        }
+        .login-side-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            min-height: 440px;
+            max-height: 440px;
+            display: block;
+            filter: brightness(0.98) saturate(1.12);
+        }
+        .img-caption {
+            position: absolute;
+            bottom: 34px;
+            left: 28px;
+            right: 28px;
+            color: #fff;
+            font-size: 1.21rem;
+            font-weight: 500;
+            text-shadow: 0 2px 8px #0006;
+            background: rgba(18, 30, 40, 0.36);
+            border-radius: 7px;
+            padding: 14px 18px 8px 18px;
+            letter-spacing: 1px;
+            text-align: left;
+        }
+        @media (max-width: 850px) {
+            .login-wrapper { flex-direction: column; width: 98vw; min-height: 0;}
+            .login-container { border-radius: 18px 18px 0 0; border-right: none; }
+            .login-side-img { min-height: 150px; padding: 0; border-radius: 0 0 18px 18px;}
+            .login-side-img img { min-height: 180px; max-height: 210px;}
+            .img-caption { position: static; margin-top: 8px; font-size: 1.07rem;}
+        }
+    </style>
+</head>
+<body>
+<div class="login-wrapper">
+    <form class="login-container" method="POST">
+        <div class="login-logo">
+            <img src="https://cdn-icons-png.flaticon.com/512/1179/1179069.png" alt="Logo">
+        </div>
+        <h1>电影推荐系统</h1>
+        <select name="role" required>
+            <option value="user">普通用户</option>
+            <option value="admin">管理员</option>
+        </select>
+        <input type="text" name="username" placeholder="用户名/用户ID" required>
+        <input type="password" name="password" placeholder="密码" required>
+        <button type="submit">登录</button>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+    </form>
+    <div class="login-side-img">
+        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=700&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW92aWV8ZW58MHx8MHx8fDA%3D" alt="Login Banner">
+        <div class="img-caption">光影之中，遇见好电影</div>
+    </div>
+</div>
+</body>
+</html>

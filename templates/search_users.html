@@ -1,0 +1,31 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section">
+    <h2>搜索用户结果</h2>
+
+    <div class="search-summary">
+        <p>查询: "{{ query }}"</p>
+        <p>找到 {{ total }} 个用户</p>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>用户ID</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in results %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>
+                    <a href="{{ url_for('admin_user_detail', user_id=user.user_id) }}" class="btn-sm">查看详情</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}电影推荐系统{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-image: url('static/img/nasa-yZygONrUBe8-unsplash.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="main-header">
+    <h1>电影推荐系统</h1>
+    <div class="movie-quote" id="movie-quote" style="margin-left:36px;flex:1;text-align:center;font-size:1.18em;color:#ffe47a;text-shadow:1px 1px 6px #000, 0 2px 2px #222;letter-spacing:1.2px;"></div>
+    <nav>
+        <a href="/">首页</a>
+        <a href="{{ url_for('admin_dashboard') }}">后台管理</a>
+        {% if session.get('logged_in') and session.get('role') == 'user' %}
+            <a href="{{ url_for('user_profile') }}">个人中心</a>
+            <a href="{{ url_for('user_messages') }}" >消息中心</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" style="color: #ff4757;">退出登录</a>
+    </nav>
+</header>
+
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let bannerIndex = 0;
+    const banners = document.querySelectorAll('.banner-slide');
+    function showBanner(n) {
+        banners.forEach((slide, idx) => {
+            slide.classList.remove('active');
+            if(idx === n) slide.classList.add('active');
+        });
+    }
+    function bannerSlide(step) {
+        bannerIndex = (bannerIndex + step + banners.length) % banners.length;
+        showBanner(bannerIndex);
+    }
+    function autoBanner() {
+        bannerIndex = (bannerIndex + 1) % banners.length;
+        showBanner(bannerIndex);
+    }
+    setInterval(autoBanner, 4000);
+    showBanner(0);
+
+    // 按钮事件
+    const leftBtn = document.querySelector('.banner-arrow.left');
+    const rightBtn = document.querySelector('.banner-arrow.right');
+    if (leftBtn) leftBtn.onclick = () => bannerSlide(-1);
+    if (rightBtn) rightBtn.onclick = () => bannerSlide(1);
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
+
+<!-- AI助手按钮和聊天框 -->
+<div id="chatbot-float-btn" style="position:fixed;bottom:34px;right:34px;z-index:9999;">
+    <img src="/static/img/icons8-消息机器人-50.png"
+        alt="AI助手"
+        style="width:64px;height:64px;border-radius:50%;cursor:pointer;"
+        onclick="document.getElementById('chatbot-box').style.display='flex';">
+</div>
+<div id="chatbot-box" class="chatbot-box" style="display:none;">
+    <div class="chatbot-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712037.png"
+            alt="AI助手" class="chatbot-avatar">
+        <span class="chatbot-title">AI 电影助手</span>
+        <button class="chatbot-close" onclick="document.getElementById('chatbot-box').style.display='none';">✖</button>
+    </div>
+    <div id="chatbot-history" class="chatbot-history" style="overflow-y:auto;max-height:300px;padding:16px 12px;"></div>
+    <form id="chatbot-form" class="chatbot-form" style="display:flex;gap:8px;padding:10px;">
+        <input id="chatbot-input" type="text" autocomplete="off" placeholder="问点什么吧～" style="flex:1;padding:9px 14px;border-radius:7px;border:1px solid #e8e8e8;font-size:1em;">
+        <button type="submit" class="btn">发送</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('chatbot-form').onsubmit = async function(e){
+    e.preventDefault();
+    let input = document.getElementById('chatbot-input');
+    let history = document.getElementById('chatbot-history');
+    let msg = input.value.trim();
+    if(!msg) return;
+    history.innerHTML += `<div style="margin-bottom:10px;text-align:right;">
+        <span style="display:inline-block;background:#e8f3ff;color:#456;padding:7px 14px;border-radius:9px;">${msg}</span>
+    </div>`;
+    input.value = '';
+    // 后端请求
+    try {
+        let res = await fetch('/chatbot_ask', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({msg: msg})
+        });
+        let data = await res.json();
+        history.innerHTML += `<div style="margin-bottom:14px;">
+            <span style="display:inline-block;background:#f6faff;color:#097;padding:8px 15px;border-radius:10px;">${data.reply}</span>
+        </div>`;
+    } catch (err) {
+        history.innerHTML += `<div style="margin-bottom:14px;">
+            <span style="display:inline-block;background:#fff3f3;color:#d00;padding:8px 15px;border-radius:10px;">AI助手接口异常</span>
+        </div>`;
+    }
+    history.scrollTop = history.scrollHeight;
+};
+</script>
+
+
+
+<script>
+// 电影著名台词列表（可自行增加）
+const quotes = [
+    "“May the Force be with you.” ——《星球大战》",
+    "“Frankly, my dear, I don't give a damn.” ——《乱世佳人》",
+    "“I'm going to make him an offer he can't refuse.” ——《教父》",
+    "“Keep your friends close, but your enemies closer.” ——《教父2》",
+    "“To infinity and beyond!” ——《玩具总动员》",
+    "“You talking to me?” ——《出租车司机》",
+    "“Here's looking at you, kid.” ——《卡萨布兰卡》",
+    "“I'll be back.” ——《终结者》",
+    "“Life was like a box of chocolates. You never know what you're gonna get.” ——《阿甘正传》",
+    "“Houston, we have a problem.” ——《阿波罗13号》",
+    "“Why so serious?” ——《蝙蝠侠：黑暗骑士》",
+    "“I see dead people.” ——《第六感》",
+    "“Just keep swimming.” ——《海底总动员》",
+    "“I am Iron Man.” ——《钢铁侠》",
+    "“Forrest, run!” ——《阿甘正传》",
+    "“Carpe diem. Seize the day, boys.” ——《死亡诗社》",
+    "“Every man dies, not every man really lives.” ——《勇敢的心》",
+    "“With great power comes great responsibility.” ——《蜘蛛侠》",
+    "“All those moments will be lost in time, like tears in rain.” ——《银翼杀手》",
+    "“Love means never having to say you're sorry.” ——《爱情故事》",
+    "“You complete me.” ——《甜心先生》",
+    "“I'm the king of the world!” ——《泰坦尼克号》",
+    "“Hasta la vista, baby.” ——《终结者2》",
+    "“Why do we fall? So we can learn to pick ourselves up.” ——《蝙蝠侠：侠影之谜》",
+    "“It's not your fault.” ——《心灵捕手》",
+    "“I'll never let go, Jack.” ——《泰坦尼克号》",
+    "“Elementary, my dear Watson.” ——《福尔摩斯探案集》",
+    "“Roads? Where we're going, we don't need roads.” ——《回到未来》",
+    "“Just when I thought I was out, they pull me back in.” ——《教父3》",
+    "“自由万岁！”——《勇敢的心》",
+    "“人一定要靠自己。”——《肖申克的救赎》",
+    "“希望是件好东西，也许是人间至善，而美好的事物永不消逝。”——《肖申克的救赎》",
+    "“世界上最远的距离，是鱼与飞鸟的距离。”——《如果·爱》",
+    "“我要让全世界都记住我爱你！”——《大话西游》",
+    "“你相信光吗？”——《赛博朋克：边缘行者》",
+    "“如果你不出去走走，你会以为这就是世界。”——《天堂电影院》",
+    "“你不能因为害怕失去就不去拥有。”——《怦然心动》",
+    "“你说人生是一场修行，后来我才懂，原来每个人都在渡。”——《无问西东》",
+    "“总有一天，你会遇到更好的人。”——《千与千寻》",
+    "“你以为你以为的就是你以为的吗？”——《疯狂的石头》",
+    "“不经历风雨，怎么见彩虹？”——《真心英雄》",
+    "“你看到的风景，都是你心里的风景。”——《心灵奇旅》",
+    "“人生不能像做菜，把所有的料都准备好了才下锅。”——《饮食男女》"
+];
+
+
+// 随机取一句
+function randomQuote() {
+    return quotes[Math.floor(Math.random() * quotes.length)];
+}
+
+// 页面加载时替换内容
+document.addEventListener('DOMContentLoaded', function () {
+    const quoteDiv = document.getElementById('movie-quote');
+    if (quoteDiv) quoteDiv.textContent = randomQuote();
+});
+</script>

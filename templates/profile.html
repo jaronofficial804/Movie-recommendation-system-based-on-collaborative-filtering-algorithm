@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="profile-section">
+    <div class="profile-header">
+        <div class="profile-avatar"></div>
+        <div class="profile-userinfo">
+            <div class="profile-uid">ID: {{ user_id }}</div>
+            <div class="profile-date">
+                注册日期：{{ join_date or '—' }}  
+                <span style="margin-left:14px;">活跃天数：{{ days_active }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="profile-stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">已评分</div>
+            <div class="stat-value">{{ rated_count }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">平均分</div>
+            <div class="stat-value">{{ avg_rating }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">评论数</div>
+            <div class="stat-value">{{ comment_count }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">最爱类型</div>
+            <div class="stat-value">{{ fav_genre }}</div>
+        </div>
+    </div>
+    <div class="profile-highlight-row">
+        {% if best_movie is not none %}
+        <div class="profile-highlight-card">
+            <div class="ph-title">最高分电影</div>
+            <div class="ph-movie">
+                <span class="ph-movie-title">{{ best_movie.title }}</span>
+                <span class="ph-movie-score">{{ best_movie.rating }} 分</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <h3 class="section-title"><span>🎖</span> 我的成就</h3>
+    <div class="profile-achievements">
+        {% for ach in achievements %}
+        <div class="ach-badge{% if ach.id in unlocked %} unlocked{% endif %}">
+            <span class="ach-icon">{{ ach.icon }}</span>
+            <span class="ach-title">{{ ach.title }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <h3 class="section-title"><span>💬</span> 我的最新评论</h3>
+    {% if comments %}
+    <ul class="profile-comments">
+        {% for c in comments[:8] %}
+        <li>
+            <div class="pc-meta">
+                <span class="pc-movie">电影ID: {{ c.movie_id }}</span>
+                <span class="pc-date">{{ c.comment_time }}</span>
+            </div>
+            <div class="pc-content">{{ c.content }}</div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="profile-no-comment">暂无评论</div>
+    {% endif %}
+</div>
+
+<style>
+.profile-section {
+    max-width: 720px;
+    margin: 38px auto 0;
+    background: rgba(32,36,54,0.82);
+    border-radius: 28px;
+    box-shadow: 0 10px 44px rgba(44,68,160,0.16),0 2px 10px rgba(0,0,0,0.13);
+    padding: 38px 38px 18px 38px;
+    backdrop-filter: blur(18px);
+    border: 1.7px solid rgba(180,200,255,0.09);
+}
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 22px;
+}
+.profile-avatar {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: linear-gradient(140deg,#4158d0 55%,#c850c0 100%);
+    box-shadow: 0 2px 18px #19367442;
+    position: relative;
+}
+.profile-avatar:before {
+    content: '';
+    display: block;
+    width: 82px; height: 82px;
+    border-radius: 50%;
+    background: url('https://cdn-icons-png.flaticon.com/512/149/149071.png') center/60px no-repeat;
+    opacity: 0.88;
+    position: absolute; left: 0; top: 0;
+}
+.profile-userinfo {
+    flex:1;
+}
+.profile-uid {
+    font-size: 1.27rem;
+    font-weight: 600;
+    color: #eaf1ff;
+    margin-bottom: 6px;
+    text-shadow: 0 1px 6px #25305d44;
+}
+.profile-date {
+    color: #9fc6ff;
+    font-size: 0.98rem;
+}
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+    margin-top: 14px;
+}
+.stat-card {
+    background: rgba(60,70,110,0.62);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px #3b4b7c1a;
+    text-align: center;
+    padding: 17px 0 8px 0;
+    position: relative;
+    transition: box-shadow 0.2s, background 0.18s;
+    border: 1.5px solid rgba(120,140,200,0.12);
+}
+.stat-card:hover {
+    background: rgba(44,120,250,0.14);
+    box-shadow: 0 6px 24px #466bf422;
+}
+.stat-label {
+    font-size: 0.96em;
+    color: #b7cdf2;
+}
+.stat-value {
+    font-size: 1.38em;
+    color: #4cc9f0;
+    font-weight: bold;
+    margin-top: 8px;
+    text-shadow: 0 2px 10px #284b7c33;
+}
+.profile-highlight-row {
+    margin: 22px 0 18px 0;
+}
+.profile-highlight-card {
+    background: linear-gradient(94deg,#283568 30%,#354787 100%);
+    border-radius: 16px;
+    box-shadow: 0 2px 16px #24387744;
+    padding: 18px 30px 12px 20px;
+    font-size: 1.09rem;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border: 1.3px solid rgba(90,120,180,0.16);
+}
+.ph-title {
+    color: #fdd76b;
+    font-weight: 600;
+    font-size: 1.08em;
+    margin-right: 8px;
+}
+.ph-movie-title {
+    font-weight: bold;
+    color: #fff;
+}
+.ph-movie-score {
+    color: #ff8e6b;
+    margin-left: 10px;
+    font-weight: bold;
+}
+.section-title {
+    font-size: 1.16em;
+    color: #8ec7f8;
+    border-left: 5px solid #22345f;
+    padding-left: 10px;
+    margin: 36px 0 18px 0;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+.profile-achievements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+.ach-badge {
+    background: rgba(42,52,88,0.78);
+    color: #b2c8ea;
+    padding: 7px 18px;
+    border-radius: 19px;
+    font-size: 1.06em;
+    box-shadow: 0 1.5px 7px #17396c33;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.6;
+    transition: background 0.2s, color 0.2s, opacity 0.18s;
+    border: 1.3px solid rgba(88,130,220,0.11);
+}
+.ach-badge.unlocked {
+    background: linear-gradient(90deg,#4cc9f0 10%,#4361ee 100%);
+    color: #fff;
+    font-weight: bold;
+    opacity: 1;
+    box-shadow: 0 2px 12px #4cc9f055;
+}
+.ach-icon {
+    font-size: 1.34em;
+}
+.profile-comments {
+    list-style: none;
+    margin: 0; padding: 0;
+}
+.profile-comments li {
+    margin-bottom: 16px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #2c3453;
+}
+.pc-meta {
+    font-size: 0.99em;
+    color: #7db0e6;
+    margin-bottom: 2px;
+}
+.pc-content {
+    color: #eaf6ff;
+    font-size: 1.08em;
+    font-weight: 500;
+    word-break: break-all;
+    padding-left: 2px;
+    text-shadow: 0 1px 7px #21315477;
+}
+.profile-no-comment {
+    color: #6a7890;
+    text-align: center;
+    margin: 30px 0;
+    font-size: 1.09em;
+}
+@media (max-width: 800px) {
+    .profile-section {padding: 13px;}
+    .profile-header {gap:12px;}
+    .profile-stats-grid {gap: 10px;}
+}
+</style>
+{% endblock %}

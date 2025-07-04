@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn{% if active_tab == 'hot' %} active{% endif %}">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn{% if active_tab == 'recommend' %} active{% endif %}">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn{% if active_tab == 'rated' %} active{% endif %}">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn{% if active_tab == 'filter' %} active{% endif %}">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn{% if active_tab == 'comments' %} active{% endif %}">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+
+
+</div>
+
+<div class="banner-carousel" id="bannerCarousel">
+    <div class="banner-slide active">
+        <img src="https://prod-images.tcm.com/Master-Profile-Images/theshawshankredemption1994.20338.2.jpg" alt="The Shawshank Redemption">
+        <div class="banner-caption">
+            <h2>The Shawshank Redemption (1994)</h2>
+            <p>IMDb评分: 9.3</p>
+            <p>类型: Drama</p>
+        </div>
+    </div>
+
+    <div class="banner-slide">
+        <img src="https://staticg.sportskeeda.com/editor/2024/11/ef82c-17311362112584-1920.jpg">
+        <div class="banner-caption">
+            <h2>Attack on Titan the Movie: The Last Attack (2024)</h2>
+            <p>IMDb评分: 9.2</p>
+            <p>类型: Action, Adventure, Animation</p>
+        </div>
+    </div>
+
+    <div class="banner-slide">
+        <img src="https://wallpaperaccess.com/full/1107727.jpg" alt="The Godfather">
+        <div class="banner-caption">
+            <h2>The Godfather (1972)</h2>
+            <p>IMDb评分: 9.2</p>
+            <p>类型: Crime, Drama</p>
+        </div>
+    </div>
+    <div class="banner-slide">
+    <img src="https://cdni.fancaps.net/file/fancaps-movieimages/3739233.jpg" alt="12 Angry Men">
+    <div class="banner-caption">
+        <h2>12 Angry Men (1957)</h2>
+        <p>IMDb评分: 9.0</p>
+        <p>类型: Crime, Drama</p>
+    </div>
+</div>
+    <div class="banner-slide">
+    <img src="https://m.media-amazon.com/images/M/MV5BMTQyMzM1ODgwMF5BMl5BanBnXkFtZTcwMzk2MTk2Mw@@._V1_.jpg" alt="The Lord of the Rings: The Return of the King">
+    <div class="banner-caption">
+        <h2>The Lord of the Rings: The Return of the King (2003)</h2>
+        <p>IMDb评分: 9.0</p>
+        <p>类型: Adventure, Drama, Fantasy</p>
+    </div>
+</div>
+    <div class="banner-slide">
+    <img src="https://wallpaperbat.com/img/131921-forrest-gump-wallpaper.jpg" alt="Forrest Gump">
+    <div class="banner-caption">
+        <h2>Forrest Gump (1994)</h2>
+        <p>IMDb评分: 8.8</p>
+        <p>类型: Drama, Romance</p>
+    </div>
+</div>
+<div class="banner-slide">
+    <img src="https://wallpaperaccess.com/full/3205120.jpg" alt="Inception">
+    <div class="banner-caption">
+        <h2>Inception (2010)</h2>
+        <p>IMDb评分: 8.8</p>
+        <p>类型: Action, Sci-Fi, Thriller</p>
+    </div>
+</div>
+<div class="banner-slide">
+    <img src="https://images3.alphacoders.com/139/thumb-1920-1392225.png" alt="The Dark Knight">
+    <div class="banner-caption">
+        <h2>The Dark Knight (2008)</h2>
+        <p>IMDb评分: 9.0</p>
+        <p>类型: Action, Crime, Drama</p>
+    </div>
+</div>
+<div class="banner-slide">
+    <img src="https://wallpapercave.com/wp/wp2661872.jpg" alt="Interstellar">
+    <div class="banner-caption">
+        <h2>Interstellar (2014)</h2>
+        <p>IMDb评分: 8.7</p>
+        <p>类型: Adventure, Drama, Sci-Fi</p>
+    </div>
+</div>
+<div class="banner-slide">
+    <img src="https://wallpaperaccess.com/full/5283385.jpg" alt="Parasite">
+    <div class="banner-caption">
+        <h2>Parasite (2019)</h2>
+        <p>IMDb评分: 8.5</p>
+        <p>类型: Drama, Thriller</p>
+    </div>
+</div>
+<div class="banner-slide">
+    <img src="https://wallpaperaccess.com/full/1231880.jpg" alt="La La Land">
+    <div class="banner-caption">
+        <h2>La La Land (2016)</h2>
+        <p>IMDb评分: 8.0</p>
+        <p>类型: Comedy, Drama, Music</p>
+    </div>
+</div>
+
+
+    <button class="banner-arrow left">&#10094;</button>
+    <button class="banner-arrow right">&#10095;</button>
+</div>
+
+<div class="hot-news-box">
+    <div class="hot-news-title">
+        <span class="hot-news-icon">🔥</span> 影视资讯榜
+    </div>
+    <ul class="hot-news-list">
+        {% for news in hot_news_list %}
+        <li class="hot-news-item">
+            <span class="hot-news-rank {% if news.rank == 1 %}hot-news-top1{% elif news.rank <= 3 %}hot-news-top3{% endif %}">
+                {{ news.rank }}
+            </span>
+            <a href="{{ news.link }}" target="_blank" title="{{ news.title }}">{{ news.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+
+<div class="boxoffice-box">
+      <div class="boxoffice-title">
+          <span class="boxoffice-icon">💰</span> 猫眼票房榜
+      </div>
+      <ul class="boxoffice-list">
+          {% for m in boxoffice_list %}
+          <li class="boxoffice-item">
+              <span class="boxoffice-rank">{{ m.rank }}</span>
+              <span class="boxoffice-name" title="{{ m.name }}">{{ m.name }}</span>
+              <span class="boxoffice-total">{{ m.total }}</span>
+              <span class="boxoffice-days">{{ m.days }}</span>
+              <span class="boxoffice-percent">{{ m.percent }}</span>
+              <span class="boxoffice-shows">场次:{{ m.shows }}</span>
+          </li>
+          {% endfor %}
+      </ul>
+  </div>
+
+<div class="popular-celebrities-section">
+  <div class="celeb-title-row">Most popular celebrities &gt;</div>
+  <div class="celeb-carousel">
+    <button class="celeb-arrow left" onclick="slideCelebs(-1)">&#10094;</button>
+    <div class="celeb-list" id="celebList">
+      {% for celeb in celebrities %}
+      <div class="celeb-item">
+        <img src="{{ celeb.img }}" alt="{{ celeb.name }}" onerror="this.src='/static/img/avatar_default.png'">
+        <div class="celeb-rank">
+          {{ celeb.rank }}
+          {% if celeb.change %}
+            <span class="{% if celeb.change > 0 %}celeb-up{% elif celeb.change < 0 %}celeb-down{% endif %}">
+              {% if celeb.change > 0 %}▲{{ celeb.change }}{% elif celeb.change < 0 %}▼{{-celeb.change}}{% endif %}
+            </span>
+          {% endif %}
+        </div>
+        <div class="celeb-name">{{ celeb.name }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="celeb-arrow right" onclick="slideCelebs(1)">&#10095;</button>
+  </div>
+</div>
+
+<div class="float-links">
+  <div class="float-links-title">友情链接</div>
+  <div class="float-links-list">
+    <a href="https://movie.douban.com/" target="_blank" class="float-link">
+      <img src="/static/img/icons8-豆瓣-50.png" alt="豆瓣电影" title="豆瓣电影">
+    </a>
+    <a href="https://maoyan.com/" target="_blank" class="float-link">
+      <img src="/static/img/mao.png" alt="猫眼电影" title="猫眼电影">
+    </a>
+    <a href="https://www.imdb.com/" target="_blank" class="float-link">
+      <img src="/static/img/imdb.png" alt="IMDb" title="IMDb">
+    </a>
+    <a href="https://www.rottentomatoes.com/" target="_blank" class="float-link">
+      <img src="/static/img/tomato.png" alt="Rotten Tomatoes" title="Rotten Tomatoes">
+    </a>
+  </div>
+</div>
+
+<div id="floating-particle-area"></div>
+
+<style>
+#floating-particle-area {
+    position: fixed;
+    right: 45px;
+    bottom: 38px;
+    width: 380px;
+    height: 200px;
+    z-index: 998;
+    pointer-events: none;
+    border-radius: 28px;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: none;
+}
+#floating-particle-area canvas {
+    width: 100%!important;
+    height: 100%!important;
+    display: block;
+    background: transparent;
+}
+@media (max-width: 900px) {
+    #floating-particle-area { display: none; }
+}
+</style>
+
+<script>
+const AREA_WIDTH = 320;
+const AREA_HEIGHT = 200;
+
+// === 新增粒子密度参数，值为 每10000像素有几个粒子 ===
+const PARTICLE_DENSITY = 12; // 例：12代表密度较高，5较稀疏
+
+// 根据面积自适应数量
+const PARTICLE_COUNT = Math.round(AREA_WIDTH * AREA_HEIGHT / 10000 * PARTICLE_DENSITY);
+const PARTICLE_COLOR = "#4cc9f0";
+const LINE_COLOR = "#4361ee";
+const PARTICLE_SIZE = 2.7;
+
+let mousePage = { x: window.innerWidth/2, y: window.innerHeight/2 };
+
+const canvas = document.createElement('canvas');
+canvas.width = AREA_WIDTH;
+canvas.height = AREA_HEIGHT;
+const ctx = canvas.getContext('2d');
+document.getElementById('floating-particle-area').appendChild(canvas);
+
+// 粒子初始生成
+let particles = [];
+for(let i=0;i<PARTICLE_COUNT;i++){
+    particles.push({
+        x: Math.random()*AREA_WIDTH,
+        y: Math.random()*AREA_HEIGHT,
+        dx: (Math.random()-0.5)*0.9,
+        dy: (Math.random()-0.5)*0.9
+    });
+}
+
+// 鼠标全页面跟随
+document.addEventListener('mousemove', function(e){
+    mousePage.x = e.clientX;
+    mousePage.y = e.clientY;
+});
+
+function animate(){
+    const areaRect = canvas.getBoundingClientRect();
+    let mouse = {
+        x: mousePage.x - areaRect.left,
+        y: mousePage.y - areaRect.top
+    };
+
+    ctx.clearRect(0,0,AREA_WIDTH,AREA_HEIGHT);
+
+    // 粒子
+    for(let p of particles){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,PARTICLE_SIZE,0,2*Math.PI);
+        ctx.fillStyle = PARTICLE_COLOR;
+        ctx.shadowColor = LINE_COLOR;
+        ctx.shadowBlur = 7;
+        ctx.fill();
+    }
+    // 画线
+    for(let i=0;i<PARTICLE_COUNT;i++){
+        for(let j=i+1;j<PARTICLE_COUNT;j++){
+            let a = particles[i], b = particles[j];
+            let dist = Math.hypot(a.x-b.x, a.y-b.y);
+            if(dist<54){
+                ctx.beginPath();
+                ctx.moveTo(a.x,a.y);
+                ctx.lineTo(b.x,b.y);
+                ctx.strokeStyle = LINE_COLOR;
+                ctx.globalAlpha = 0.13 + (1-dist/54)*0.33;
+                ctx.lineWidth = 1.15;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+    }
+    // 鼠标吸引
+    for(let p of particles){
+        let dx = mouse.x-p.x, dy = mouse.y-p.y;
+        let dist = Math.hypot(dx,dy);
+        if(dist<120){
+            p.x += dx*0.013;
+            p.y += dy*0.013;
+        }
+    }
+    // 粒子漂移与边界反弹
+    for(let p of particles){
+        p.x += p.dx;
+        p.y += p.dy;
+        if(p.x<0||p.x>AREA_WIDTH) p.dx*=-1;
+        if(p.y<0||p.y>AREA_HEIGHT) p.dy*=-1;
+    }
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+
+{% endblock %}
+
+
+<script>
+function slideCelebs(dir) {
+    const celebList = document.getElementById('celebList');
+    const scrollAmount = 68; // 与 .celeb-item min/max-width 匹配
+    celebList.scrollBy({left: dir * scrollAmount, behavior: 'smooth'});
+}
+</script>
+

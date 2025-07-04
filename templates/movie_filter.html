@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn{% if active_tab == 'hot' %} active{% endif %}">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn{% if active_tab == 'recommend' %} active{% endif %}">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn{% if active_tab == 'rated' %} active{% endif %}">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn{% if active_tab == 'filter' %} active{% endif %}">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn{% if active_tab == 'comments' %} active{% endif %}">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+</div>
+
+<div class="section movie-filter-section">
+    <h2 style="margin:0 0 16px 6px; font-size:1.4em; letter-spacing:1.1px; color:#fff; font-weight:900;">电影筛选</h2>
+    <div class="filter-bar">
+        <form method="get" class="filter-form">
+            <div class="filter-group">
+                <select id="genre" name="genre">
+                    <option value="">全部类型</option>
+                    {% for g in all_genres %}
+                    <option value="{{ g }}" {% if g == genre %}selected{% endif %}>{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <select id="year" name="year">
+                    <option value="">全部年份</option>
+                    {% for y in all_years %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group rating-group">
+                <input type="number" step="0.1" min="1" max="10" name="min_rating" placeholder="最低分" value="{{ min_rating }}">
+                <span class="split">-</span>
+                <input type="number" step="0.1" min="1" max="10" name="max_rating" placeholder="最高分" value="{{ max_rating }}">
+            </div>
+            <button type="submit" class="btn btn-primary">筛选</button>
+        </form>
+        <div class="filter-result-tip">
+            共找到 <b>{{ total }}</b> 部电影
+        </div>
+    </div>
+
+    <div class="movie-grid">
+        {% for movie in movies %}
+        <div class="movie-card">
+            <h3>{{ movie.title }} ({{ movie.year }})</h3>
+            <p>IMDb评分: {{ movie.imdb_rating }}</p>
+            <p>时长: {{ movie.duration }}</p>
+            <p>类型: {{ movie.genre }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if current_page > 1 %}
+            <a href="{{ url_for('movie_filter', genre=genre, year=year, min_rating=min_rating, max_rating=max_rating, page=current_page-1) }}">&laquo; 上一页</a>
+        {% endif %}
+        <span>第 {{ current_page }} 页 / 共 {{ total_pages }} 页</span>
+        {% if current_page < total_pages %}
+            <a href="{{ url_for('movie_filter', genre=genre, year=year, min_rating=min_rating, max_rating=max_rating, page=current_page+1) }}">下一页 &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+/* 暗色毛玻璃主卡片背景 */
+.movie-filter-section.section {
+    background: rgba(25,32,48,0.74);
+    border-radius: 22px;
+    box-shadow: 0 8px 36px 0 rgba(28,44,90,0.17), 0 2px 14px rgba(0,0,0,0.09);
+    border: 1.5px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(13px);
+    padding: 38px 0 30px 0;
+    max-width: 1100px;
+    margin: 38px auto 32px auto;
+    transition: box-shadow 0.18s, background 0.22s;
+    position: relative;
+}
+.filter-bar {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px 16px;
+    padding: 6px 32px 0 32px;
+    margin-bottom: 12px;
+}
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+    background: none;
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.rating-group input[type="number"] {
+    width: 65px;
+}
+.filter-group select,
+.filter-group input[type="number"] {
+    padding: 8px 14px;
+    font-size: 1em;
+    border: 1.2px solid #4b5168;
+    border-radius: 7px;
+    background: rgba(35,41,61,0.93);
+    outline: none;
+    color: #fff;
+    transition: border 0.2s, box-shadow 0.18s, background 0.2s;
+}
+.filter-group select:focus,
+.filter-group input[type="number"]:focus {
+    border: 1.2px solid #4cc9f0;
+    box-shadow: 0 2px 8px rgba(64,152,255,0.13);
+    background: rgba(44,52,86,0.97);
+}
+.split {
+    color: #6aa0c8;
+    margin: 0 3px;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+.btn-primary {
+    padding: 9px 28px;
+    border-radius: 8px;
+    font-size: 1.05em;
+    background: linear-gradient(90deg, #4cc9f0 0%, #4361ee 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 10px rgba(68,160,240,0.07);
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.18s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg, #4361ee 0%, #4cc9f0 100%);
+}
+.filter-result-tip {
+    color: #fff;
+    font-size: 1.07em;
+    margin-left: 14px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    opacity: 0.84;
+}
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
+    gap: 22px;
+    margin-top: 26px;
+    padding: 0 28px;
+}
+.movie-card {
+    background: rgba(255,255,255,0.09);
+    border-radius: 13px;
+    padding: 17px 15px 13px 15px;
+    box-shadow: 0 1.5px 8px rgba(44,70,120,0.09);
+    transition: box-shadow 0.19s, transform 0.17s;
+    border: 1px solid rgba(230,235,245,0.13);
+    color: #fff;
+}
+.movie-card:hover {
+    box-shadow: 0 6px 28px rgba(80,140,220,0.13), 0 2px 10px rgba(0,0,0,0.08);
+    transform: translateY(-3px) scale(1.017);
+}
+.movie-card h3 {
+    font-size: 1.13em;
+    margin: 0 0 8px 0;
+    font-weight: bold;
+    color: #fff;
+}
+.movie-card p {
+    margin: 5px 0 0 0;
+    color: #c9daf7;
+    font-size: 0.99em;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin: 32px 0 6px 0;
+    font-size: 1.08em;
+}
+.pagination a {
+    color: #90caf9;
+    background: #23294d;
+    padding: 7px 16px;
+    border-radius: 7px;
+    text-decoration: none;
+    border: none;
+    transition: background 0.13s;
+    font-weight: 600;
+}
+.pagination a:hover {
+    background: #4361ee;
+    color: #fff;
+}
+.pagination span {
+    color: #fff;
+    font-weight: 500;
+    opacity: 0.82;
+}
+@media (max-width: 800px) {
+    .movie-filter-section.section { padding: 10px 0 8px 0; }
+    .filter-bar, .movie-grid { padding: 0 7px; }
+    .movie-grid { gap: 10px; }
+}
+@media (max-width: 600px) {
+    .filter-form { flex-direction: column; align-items: stretch; gap: 10px; }
+    .filter-bar { flex-direction: column; align-items: stretch; padding: 0 2vw; gap: 4px; }
+    .filter-result-tip { margin: 9px 0 0 3px;}
+    .movie-grid { grid-template-columns: 1fr; padding: 0 2vw;}
+}
+</style>
+{% endblock %}

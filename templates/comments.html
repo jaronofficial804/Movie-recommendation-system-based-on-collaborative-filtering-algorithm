@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn active">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+</div>
+
+<div class="section" style="max-width:700px;margin:auto;">
+    <div class="title-search-bar">
+        <h2>电影评论区</h2>
+        <form method="get" class="search-form">
+            <input name="search_title" type="text" placeholder="搜索电影名称" value="{{ search_title or '' }}">
+            <button type="submit" class="btn">搜索</button>
+        </form>
+    </div>
+
+    {% if search_results %}
+        <h3>请选择你想评论的电影：</h3>
+        <ul style="margin-bottom:20px;">
+        {% for movie in search_results %}
+            <li>
+                <a href="{{ url_for('comments_page', search_title=search_title, movie_id=movie.movie_id) }}">
+                    {{ movie.title }} ({{ movie.year }})
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if selected_movie %}
+        <h3>《{{ selected_movie.title }} ({{ selected_movie.year }})》的评论</h3>
+        <div class="comment-section">
+            <form method="post" style="margin-bottom:22px;">
+                <textarea name="content" rows="3" maxlength="200" required style="width:100%;font-size:1.1em;border-radius:8px;padding:10px;border:1px solid #e0e0e0;" placeholder="畅所欲言..."></textarea>
+                <button type="submit" class="btn" style="margin-top:12px;">发布评论</button>
+            </form>
+            {% if comments %}
+            <ul class="comment-list">
+                {% for c in comments %}
+                <li class="comment-item{% if session['user_id'] == c.user_id %} my-comment{% endif %}">
+                    <div class="comment-left">
+                        <div class="comment-avatar">
+                            <div class="avatar-circle">{{ c.user_id|default("U") }}</div>
+                        </div>
+                    </div>
+                    <div class="comment-main">
+                        <div class="comment-meta">
+                            <span class="comment-user{% if session['user_id'] == c.user_id %} self{% endif %}">用户{{ c.user_id }}</span>
+                            <span class="comment-date">{{ c.comment_time }}</span>
+                            {% if session['user_id'] == c.user_id %}
+                            <button type="button" class="comment-delete-btn del-comment" data-cid="{{ c.comment_id }}" title="删除">
+                                <svg viewBox="0 0 20 20" width="16" height="16"><path d="M6 6l8 8M14 6l-8 8" stroke="#888" stroke-width="2" stroke-linecap="round"/></svg>
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="comment-text">{{ c.content }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color:#aaa;text-align:center;margin-top:40px;">暂无评论，快来发表你的想法吧！</p>
+            {% endif %}
+        </div>
+    {% elif search_title and not search_results %}
+        <p>未找到相关电影。</p>
+    {% endif %}
+</div>
+
+{# 只有未搜索时才显示全站评论词云 #}
+{% if not search_title %}
+<h3 style="margin-top:50px;text-align:center;">评论内容词云</h3>
+<div style="text-align:center;">
+    <img src="{{ url_for('comments_wordcloud') }}"
+         alt="评论词云"
+         style="max-width:98%;border-radius:14px;box-shadow:0 3px 20px #8fc7ff25;">
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block head %}
+<style>
+.section {
+    background: rgba(24,30,54,0.85);
+    border-radius: 24px;
+    box-shadow: 0 10px 38px 0 rgba(36,60,120,0.21), 0 2px 14px rgba(0,0,0,0.10);
+    border: 1.5px solid rgba(54,100,180,0.12);
+    backdrop-filter: blur(13px) saturate(120%);
+    padding: 38px 0 30px 0;
+    max-width: 900px;
+    margin: 38px auto 32px auto;
+    color: #e2eaff;
+}
+
+.title-search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 38px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+}
+.title-search-bar h2 {
+    margin: 0;
+    color: #cbe6ff;
+    font-weight: 900;
+    font-size: 1.36em;
+    letter-spacing: 1.1px;
+    white-space: nowrap;
+}
+
+.search-form input[type="text"] {
+    background: rgba(40,54,88,0.97);
+    color: #e8f6ff;
+    border: 1.5px solid #3b6cf7;
+    border-radius: 12px 0 0 12px;
+    padding: 10px 17px;
+    font-size: 1.09em;
+    outline: none;
+    width: 220px;
+    transition: border 0.17s, background 0.17s;
+}
+.search-form input[type="text"]:focus {
+    border: 1.5px solid #4cc9f0;
+    background: rgba(54,78,120,1);
+}
+.search-form .btn {
+    background: linear-gradient(90deg, #4cc9f0 0%, #4361ee 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0 12px 12px 0;
+    font-size: 1.08em;
+    padding: 10px 30px;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(68,160,240,0.09);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-left: -4px;
+}
+.search-form .btn:hover {
+    background: linear-gradient(90deg, #4361ee 0%, #4cc9f0 100%);
+}
+
+/* 评论区整体深色毛玻璃 */
+.comment-section {
+    background: rgba(21,28,45,0.92);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px #0e253f44;
+    padding: 28px 24px 18px 24px;
+    margin-top: 22px;
+}
+
+/* 输入框毛玻璃深色风格 */
+.comment-section form textarea {
+    background: rgba(34,44,77,0.96);
+    border: 1.7px solid #264385;
+    color: #c2e4ff;
+    font-size: 1.13em;
+    border-radius: 11px;
+    padding: 12px 18px;
+    outline: none;
+    margin-bottom: 10px;
+    box-shadow: 0 1.5px 7px #2447c517;
+    transition: border 0.17s, background 0.17s, color 0.17s;
+    resize: vertical;
+}
+.comment-section form textarea:focus {
+    border-color: #4cc9f0;
+    background: #212f4b;
+    color: #fff;
+}
+.comment-section form .btn {
+    background: linear-gradient(90deg, #4cc9f0 0%, #4361ee 100%);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 9px 28px;
+    border: none;
+    font-size: 1.05em;
+    transition: background 0.18s;
+}
+
+/* 评论卡片无白条！ */
+.comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 18px;
+}
+.comment-item {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    position: relative;
+    border-radius: 15px;
+    background: linear-gradient(110deg, rgba(32,44,74,0.97) 70%, rgba(54,110,200,0.12) 100%);
+    box-shadow: 0 2px 14px #24489118, 0 1.5px 6px #3878d124;
+    padding: 18px 22px 15px 16px;
+    border-left: 5px solid transparent;
+    color: #cfe7ff;
+    transition: box-shadow 0.15s, background 0.14s, border-left 0.15s;
+}
+
+/* 我的评论高亮蓝边+暗色卡片 */
+.comment-item.my-comment {
+    background: linear-gradient(110deg, rgba(41,68,130,0.97) 60%, rgba(0,193,255,0.10) 100%);
+    border-left: 5px solid #4cc9f0;
+    box-shadow: 0 3px 18px #34a4fa25, 0 1.5px 8px #4cc9f017;
+    color: #e9f6ff;
+}
+.comment-item.my-comment .comment-user.self {
+    color: #4cc9f0;
+    font-weight: 700;
+    background: linear-gradient(90deg, #2747b0 0%, #37bbf6 100%);
+    border-radius: 8px;
+    padding: 2px 13px;
+    margin-right: 8px;
+    box-shadow: 0 2px 10px #7bc9ff12;
+    display: inline-block;
+    letter-spacing: 1px;
+}
+
+/* 头像深色渐变+我的评论加亮 */
+.comment-avatar .avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(120deg, #2c3757 60%, #3973a8 100%);
+    color: #61e2fc;
+    font-size: 1.23em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px #1647a633;
+    border: 2px solid #3251a2;
+    transition: background 0.18s, color 0.17s, border 0.18s, box-shadow 0.18s, transform 0.18s;
+}
+.comment-item.my-comment .avatar-circle {
+    background: linear-gradient(120deg,#1a8fff 25%,#4cc9f0 100%);
+    color: #fff;
+    border: 2.5px solid #4cc9f0;
+    box-shadow: 0 2px 16px #4cc9f028;
+    font-weight: 900;
+    transform: scale(1.09);
+}
+
+.comment-main { flex: 1; min-width: 0; }
+.comment-meta {
+    color: #82caff;
+    font-size: 1.01em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.comment-date { color: #5ec0ff; font-size: 0.98em; margin-left: 9px;}
+.comment-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 12px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    transition: background 0.15s;
+}
+.comment-delete-btn:hover { background: #183060; }
+.comment-text {
+    background: none !important;    /* 绝对禁止有白条 */
+    color: #e4f4ff;
+    font-size: 1.13em;
+    margin-top: 5px;
+    word-break: break-all;
+    text-shadow: 0 1px 4px #23427540;
+}
+
+/* 词云、提示信息 */
+img[alt="评论词云"] {
+    margin-top: 16px;
+    background: rgba(30,38,65,0.72);
+    border-radius: 14px;
+    box-shadow:0 3px 20px #3a5fff3a;
+    padding: 8px;
+}
+p, h3 { color: #9ac7ff; }
+
+::-webkit-scrollbar { width: 11px; background: rgba(35,45,67,0.19); border-radius: 8px;}
+::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #4361ee 40%, #4cc9f0 100%); border-radius: 8px; border: 2px solid rgba(44,66,120,0.27);}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #4cc9f0 10%, #4361ee 90%);}
+::-webkit-scrollbar-track { background: rgba(22,28,45,0.15); border-radius: 8px;}
+html, body, * { scrollbar-width: thin; scrollbar-color: #4cc9f0 rgba(25,35,52,0.16); }
+
+@media (max-width:700px) {
+    .section {padding: 7px;}
+    .title-search-bar { flex-direction: column; gap: 18px;}
+    .search-form input[type="text"] {width:100%;}
+    .comment-section {padding:10px 2vw;}
+    .comment-item {padding: 10px 8px 10px 8px;}
+    .comment-avatar .avatar-circle {width:32px;height:32px;font-size:1.1em;}
+}
+.section a {
+    color: #5bd7ff;
+    font-weight: 500;
+    text-decoration: underline;
+    transition: color 0.14s;
+    text-shadow: 0 2px 12px #1c355540;
+}
+.section a:visited {
+    color: #a2c3ff;
+}
+.section a:hover {
+    color: #ffe47a;
+    background: linear-gradient(90deg,#353c4f 60%,#2c4778 100%);
+    border-radius: 4px;
+    text-decoration: underline;
+}
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.del-comment').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            var cid = btn.getAttribute('data-cid');
+            if(!cid) return;
+            if(!confirm("确定要删除这条评论吗？")) return;
+            fetch('/delete_comment/' + cid, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+            }).then(resp => resp.json()).then(data => {
+                if(data.success) {
+                    btn.closest('.comment-item').style.display = 'none';
+                } else {
+                    alert(data.msg || "删除失败");
+                }
+            }).catch(()=>alert('网络错误，删除失败'));
+        });
+    });
+});
+</script>
+
+{% endblock %}

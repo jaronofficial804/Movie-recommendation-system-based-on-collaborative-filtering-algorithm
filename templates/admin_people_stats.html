@@ -1,0 +1,238 @@
+{% extends "admin.html" %}
+{% block admin_main %}
+<div class="admin-section">
+    <h2>电影相关人物统计分析</h2>
+    <div class="chart-row">
+        <div class="chart-container">
+            <h2>职业分布TOP15</h2>
+            <canvas id="professionChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>出生年代分布</h2>
+            <canvas id="decadeChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-row">
+        <div class="chart-container">
+            <h2>寿命统计</h2>
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <h3>平均寿命</h3>
+                    <p class="stat-value">{{ lifespan_stats[0] if lifespan_stats[0] != "无数据" else "无数据" }}{% if lifespan_stats[0] != "无数据" %} 岁{% endif %}</p>
+                </div>
+                <div class="stats-card">
+                    <h3>寿命中位数</h3>
+                    <p class="stat-value">{{ lifespan_stats[1] if lifespan_stats[1] != "无数据" else "无数据" }}{% if lifespan_stats[1] != "无数据" %} 岁{% endif %}</p>
+                </div>
+                <div class="stats-card">
+                    <h3>最长寿命</h3>
+                    <p class="stat-value">{{ lifespan_stats[2] if lifespan_stats[2] != "无数据" else "无数据" }}{% if lifespan_stats[2] != "无数据" %} 岁{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h2>人物最多的电影TOP10</h2>
+            <canvas id="moviePersonChart"></canvas>
+        </div>
+    </div>
+</div>
+<style>
+.admin-section {
+    padding: 20px 0 0 0;
+}
+.chart-container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 6px 32px #b0c7ec22, 0 2px 10px #98d2ff22;
+    padding: 22px 18px 22px 18px;
+    margin-bottom: 32px;
+    border: none;
+    transition: box-shadow .2s;
+}
+.chart-container h2 {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #217aff;
+    letter-spacing: .3px;
+    margin-bottom: 18px;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 18px;
+}
+.stats-card {
+    background: linear-gradient(120deg, #eaf6ff 0, #d1e8ff 100%);
+    border-radius: 14px;
+    box-shadow: 0 3px 15px #afd0fb25;
+    text-align: center;
+    padding: 22px 5px 18px 5px;
+}
+.stats-card .stat-value {
+    font-size: 2em;
+    font-weight: 800;
+    color: #2675d6;
+    margin-top: 8px;
+    letter-spacing: .2px;
+}
+@media (max-width:900px) {
+    .stats-grid { grid-template-columns: 1fr; gap:10px;}
+}
+</style>
+
+<script>
+function makeGradient(ctx, c1, c2) {
+    let grad = ctx.createLinearGradient(0,0,0,220);
+    grad.addColorStop(0, c1);
+    grad.addColorStop(1, c2);
+    return grad;
+}
+
+// ====== 职业分布TOP15（现代横条、圆角+渐变）======
+const professionCtx = document.getElementById('professionChart').getContext('2d');
+const profGrad = makeGradient(professionCtx, "#6ce6ff", "#3b92f5");
+new Chart(professionCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ profession_labels|tojson }},
+        datasets: [{
+            label: '人数',
+            data: {{ profession_data|tojson }},
+            backgroundColor: profGrad,
+            borderRadius: 16,
+            barPercentage: 0.72,
+            categoryPercentage: 0.82
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: "#fff",
+                bodyColor: "#223",
+                titleColor: "#3b92f5",
+                borderColor: "#6ce6ff",
+                borderWidth: 1,
+                padding: 11
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                grid: { color: "#f2f7fc" },
+                ticks: { color: "#66aaff" }
+            },
+            y: {
+                ticks: { color: "#39c1ff", font: { size: 13, weight:'bold' } },
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// ====== 出生年代分布（现代细线平滑）======
+const decadeCtx = document.getElementById('decadeChart').getContext('2d');
+new Chart(decadeCtx, {
+    type: 'line',
+    data: {
+        labels: {{ decade_labels|tojson }},
+        datasets: [{
+            label: '出生人数',
+            data: {{ decade_data|tojson }},
+            borderColor: "#fc5185",
+            backgroundColor: "rgba(252,81,133,0.07)",
+            pointRadius: 3.5,
+            pointBackgroundColor: "#ffd700",
+            pointBorderColor: "#fff",
+            fill: true,
+            tension: 0.36,
+            borderWidth: 3
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: "#fc5185",
+                    font: { size: 13, weight:'bold' }
+                }
+            },
+            tooltip: {
+                backgroundColor: "#fff",
+                bodyColor: "#223",
+                titleColor: "#fc5185",
+                borderColor: "#ffd700",
+                borderWidth: 1
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: "#b18f8f", font: { size: 13 } },
+                grid: { color: "#f8f2fc" }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: "#fc5185", font: { size: 12 } },
+                grid: { color: "#f8f2fc" }
+            }
+        }
+    }
+});
+
+// ====== 人物最多的电影TOP10（现代厚圆环）======
+const moviePersonCtx = document.getElementById('moviePersonChart').getContext('2d');
+const doughnutColors = [
+    "#6ce6ff","#3b92f5","#ffd700","#fc5185","#a390ee",
+    "#4bc0c0","#fdbb2d","#22c1c3","#b0db7d","#ee4b2b"
+];
+new Chart(moviePersonCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ top_movies|map(attribute='title')|list|tojson }},
+        datasets: [{
+            data: {{ top_movies|map(attribute='count')|list|tojson }},
+            backgroundColor: doughnutColors,
+            borderWidth: 4,
+            borderColor: "#fff",
+            hoverOffset: 14
+        }]
+    },
+    options: {
+        cutout: "64%",
+        plugins: {
+            legend: {
+                position: 'right',
+                align: 'middle',
+                labels: {
+                    color: "#3864ad",
+                    boxWidth: 14,
+                    padding: 16,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: { size: 14 }
+                }
+            },
+            tooltip: {
+                backgroundColor: "#fff",
+                borderColor: "#3b92f5",
+                borderWidth: 1,
+                titleColor: "#217aff",
+                bodyColor: "#223",
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.raw}人`;
+                    }
+                }
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true
+        }
+    }
+});
+</script>
+{% endblock %}

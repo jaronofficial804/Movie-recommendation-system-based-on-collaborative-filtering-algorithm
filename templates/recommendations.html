@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tab-nav">
+    <a href="{{ url_for('index') }}" class="tab-btn{% if active_tab == 'hot' %} active{% endif %}">热门电影</a>
+    <a href="{{ url_for('recommend_user') }}" class="tab-btn{% if active_tab == 'recommend' %} active{% endif %}">为我推荐</a>
+    <a href="{{ url_for('user_rated_movies') }}" class="tab-btn{% if active_tab == 'rated' %} active{% endif %}">我的已评分</a>
+    <a href="{{ url_for('movie_filter') }}" class="tab-btn{% if active_tab == 'filter' %} active{% endif %}">电影筛选</a>
+    <a href="{{ url_for('comments_page') }}" class="tab-btn{% if active_tab == 'comments' %} active{% endif %}">评论</a>
+    <a href="{{ url_for('my_achievements') }}" class="tab-btn{% if active_tab == 'achievements' %} active{% endif %}">我的成就</a>
+</div>
+
+<div class="immersive-carousel" id="immersiveCarousel">
+  {% for movie in recommendations %}
+  <div class="immersive-card" data-index="{{ loop.index0 }}">
+    <img class="immersive-cover" src="{{ movie.cover_url or 'https://tse1-mm.cn.bing.net/th/id/OIP-C.b0reXI12jKXUfwV0mm7ccgHaHU?w=145&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3' }}" alt="{{ movie.title }}">
+    <div class="immersive-info">
+      <h2 class="immersive-title">{{ movie.title }} <span class="immersive-year">({{ movie.year }})</span></h2>
+      <div class="immersive-meta">
+        <span>预测评分: <strong>{{ movie.predicted_rating }}</strong></span>
+        <span>IMDb: {{ movie.imdb_rating }}</span>
+        <span>类型: {{ movie.genre }}</span>
+        <span>时长: {{ movie.duration }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+.immersive-carousel {
+  position: relative;
+  min-height: 520px;
+  max-width: 1020px;
+  margin: 80px auto 50px auto;
+  height: 590px;
+  overflow: visible;
+  background: none;
+}
+.immersive-card {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0; margin: auto;
+  width: 96%;
+  opacity: 0;
+  transform: scale(0.93) translateY(90px);
+  transition:
+    opacity 0.54s cubic-bezier(.56,.03,.23,1),
+    transform 0.54s cubic-bezier(.56,.03,.23,1);
+  z-index: 1;
+  background: none;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding: 0 0 0 0;
+}
+.immersive-card.active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  z-index: 5;
+  pointer-events: auto;
+}
+.immersive-card.prev {
+  opacity: 0;
+  transform: scale(0.85) translateY(-170px);
+  z-index: 2;
+}
+.immersive-card.next {
+  opacity: 0;
+  transform: scale(0.85) translateY(170px);
+  z-index: 2;
+}
+.immersive-cover {
+  width: 300px;
+  height: 410px;
+  object-fit: cover;
+  border-radius: 26px;
+  box-shadow: 0 12px 54px #16308024;
+  background: #181c26;
+}
+.immersive-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+.immersive-title {
+  font-size: 2.75em;
+  font-weight: 900;
+  margin-bottom: 18px;
+  color: #192238;
+  letter-spacing: 2.5px;
+  line-height: 1.16;
+}
+.immersive-year {
+  font-size: 0.58em;
+  color: #23aae7;
+  font-weight: 600;
+}
+.immersive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px 24px;
+  font-size: 1.58em;
+  color: #425376;
+  letter-spacing: 1.1px;
+}
+.immersive-meta strong {
+  color: #e85345;
+  font-weight: 900;
+}
+@media (max-width: 900px) {
+  .immersive-carousel {max-width: 99vw; min-height:220px; height:auto;}
+  .immersive-card {gap:20px;}
+  .immersive-cover { width: 110px; height: 155px;}
+  .immersive-title { font-size: 1.19em; }
+  .immersive-meta { font-size: 1.01em; gap: 12px 10px;}
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let curIndex = 0;
+const cards = document.querySelectorAll('.immersive-carousel .immersive-card');
+function updateImmersive() {
+    cards.forEach((card,i)=>{
+        card.classList.remove('active','prev','next');
+        if(i === curIndex) card.classList.add('active');
+        else if(i < curIndex) card.classList.add('prev');
+        else if(i > curIndex) card.classList.add('next');
+    });
+}
+updateImmersive();
+
+const isRecommendPage = '{{ active_tab }}' === 'recommend';
+let scrollLock = false;
+if(isRecommendPage) {
+    window.addEventListener('wheel', function(e){
+        if (scrollLock) return;
+        scrollLock = true;
+        setTimeout(()=>scrollLock=false, 480);
+        if(e.deltaY>0) curIndex = Math.min(cards.length-1, curIndex+1);
+        else curIndex = Math.max(0, curIndex-1);
+        updateImmersive();
+        e.preventDefault();
+    }, { passive: false });
+
+    // 方向键支持
+    document.addEventListener('keydown', function(e){
+        if(e.key==='ArrowDown' || e.key==='ArrowRight') {
+            curIndex = Math.min(cards.length-1, curIndex+1);
+            updateImmersive();
+        }
+        if(e.key==='ArrowUp' || e.key==='ArrowLeft') {
+            curIndex = Math.max(0, curIndex-1);
+            updateImmersive();
+        }
+    });
+}
+</script>
+{% endblock %}

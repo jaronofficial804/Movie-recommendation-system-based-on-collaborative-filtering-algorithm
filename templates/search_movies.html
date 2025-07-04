@@ -1,0 +1,43 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section">
+    <h2>搜索电影结果</h2>
+    <div class="search-summary" style="margin-bottom:18px;">
+        <span>查询: "{{ query }}"</span>
+        <span style="margin-left:18px;">找到 {{ total }} 部电影</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>年份</th>
+                <th>时长</th>
+                <th>类型</th>
+                <th>IMDb评分</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in results %}
+            <tr>
+                <td>{{ movie.movie_id }}</td>
+                <td>{{ movie.title }}</td>
+                <td>{{ movie.year }}</td>
+                <td>{{ movie.duration }}</td>
+                <td>{{ movie.genre }}</td>
+                <td>{{ movie.imdb_rating }}</td>
+                <td>
+                    <a href="{{ url_for('admin_movie_detail', movie_id=movie.movie_id) }}" class="btn-sm">查看</a>
+                    <a href="{{ url_for('admin_edit_movie', movie_id=movie.movie_id) }}" class="btn-sm">编辑</a>
+                    <form action="{{ url_for('admin_delete_movie', movie_id=movie.movie_id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn-sm danger" onclick="return confirm('确定要删除这部电影吗？')">删除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

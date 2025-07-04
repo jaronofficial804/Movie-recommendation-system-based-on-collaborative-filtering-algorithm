@@ -1,0 +1,62 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section">
+    <div class="admin-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="margin-bottom:0;">用户管理</h2>
+        <form action="{{ url_for('search_users') }}" method="GET" class="search-form" style="display:flex;gap:7px;">
+            <input type="text" name="q" placeholder="搜索用户ID..." class="search-input" value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="search-button">搜索</button>
+        </form>
+    </div>
+
+    <div class="admin-actions" style="margin-bottom:12px;">
+        <a href="{{ url_for('admin_add_rating') }}" class="btn">添加新评分</a>
+    </div>
+
+    <div class="table-responsive">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>用户ID</th>
+                <th>评分数量</th>
+                <th>平均评分</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>{{ user.rating_count }}</td>
+                <td>{{ "%.2f"|format(user.avg_rating) }}</td>
+                <td>
+                    <a href="{{ url_for('admin_user_detail', user_id=user.user_id) }}" class="btn-sm">查看详情</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <div class="pagination" style="margin-top:16px;">
+        {% if current_page > 1 %}
+            <a href="{{ url_for('admin_users', page=current_page-1) }}">&laquo; 上一页</a>
+        {% endif %}
+        <span>第 {{ current_page }} 页 / 共 {{ total_pages }} 页</span>
+        {% if current_page < total_pages %}
+            <a href="{{ url_for('admin_users', page=current_page+1) }}">下一页 &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+<style>
+.admin-table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 10px #e6f1fd1b; border-radius: 6px; overflow: hidden; }
+.admin-table th, .admin-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f2f6; }
+.admin-table th { background: #f7fbff; font-weight: 600; color: #20639b; }
+.btn-sm { display: inline-block; padding: 5px 11px; background: #31afff; color: #fff; border-radius: 5px; font-size: 13px; text-decoration: none; border: none; cursor: pointer; margin-right: 4px; transition: background .14s;}
+.btn-sm.danger { background: #f46e6e; }
+.btn-sm:hover { background: #1790d7; }
+.table-responsive { overflow-x:auto; }
+.pagination a, .pagination span { display:inline-block;margin:0 6px 0 0; color:#17968e; text-decoration:none; }
+</style>
+{% endblock %}

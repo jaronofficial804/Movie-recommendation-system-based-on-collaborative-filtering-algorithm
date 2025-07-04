@@ -1,0 +1,64 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section">
+    <h2>评论管理</h2>
+    <form class="search-form" method="get" style="margin-bottom:20px;">
+        <input type="text" name="q" value="{{ keyword }}" placeholder="搜索内容或电影ID" style="width:230px;">
+        <button type="submit" class="btn">搜索</button>
+    </form>
+    <div class="table-responsive">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>电影</th>
+                <th>用户ID</th>
+                <th>评论内容</th>
+                <th>时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for c in comments %}
+            <tr>
+                <td>{{ c.comment_id }}</td>
+                <td>
+                  {% if c.movie_id in movie_map %}
+                    {{ movie_map[c.movie_id] }}<br><small>ID:{{ c.movie_id }}</small>
+                  {% else %}
+                    {{ c.movie_id }}
+                  {% endif %}
+                </td>
+                <td>{{ c.user_id }}</td>
+                <td style="max-width:320px;white-space:pre-wrap;">{{ c.content }}</td>
+                <td>{{ c.comment_time }}</td>
+                <td>
+                  <button class="btn-sm danger" onclick="deleteComment({{ c.comment_id }}, this)">删除</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% if total_pages > 1 %}
+      <div class="pagination" style="margin-top:18px;">
+      {% for p in range(1, total_pages+1) %}
+        <a href="?q={{ keyword }}&page={{ p }}"{% if p==current_page %} class="active"{% endif %}>{{ p }}</a>
+      {% endfor %}
+      </div>
+    {% endif %}
+</div>
+<script>
+function deleteComment(cid, btn) {
+    if(!confirm('确定要删除该评论？')) return;
+    fetch('/admin/delete_comment/' + cid, {method:'POST'}).then(r=>r.json()).then(d=>{
+        if(d.success) {
+            btn.closest('tr').remove();
+        } else {
+            alert(d.msg||'删除失败');
+        }
+    });
+}
+</script>
+{% endblock %}

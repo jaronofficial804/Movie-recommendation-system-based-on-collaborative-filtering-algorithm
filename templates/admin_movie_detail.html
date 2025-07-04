@@ -1,0 +1,139 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section" style="max-width:900px;margin:auto;background:#fff;padding:30px 32px 28px 32px;border-radius:14px;box-shadow:0 2px 16px #dae6ff12;">
+    <h2 style="margin-bottom:28px;">电影详情 - {{ movie.title }} ({{ movie.year }})</h2>
+
+    <div class="movie-details">
+        <div class="detail-row">
+            <span class="detail-label">电影ID:</span>
+            <span class="detail-value">{{ movie.movie_id }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">标题:</span>
+            <span class="detail-value">{{ movie.title }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">年份:</span>
+            <span class="detail-value">{{ movie.year }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">时长:</span>
+            <span class="detail-value">{{ movie.duration }} 分钟</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">类型:</span>
+            <span class="detail-value">{{ movie.genre }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">IMDb评分:</span>
+            <span class="detail-value">{{ movie.imdb_rating }}</span>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('admin_edit_movie', movie_id=movie.movie_id) }}" class="btn">编辑电影信息</a>
+        <form action="{{ url_for('admin_delete_movie', movie_id=movie.movie_id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn danger" onclick="return confirm('确定要删除这部电影吗？')">删除电影</button>
+        </form>
+    </div>
+
+    <div class="info-section">
+        <h3>相关人物</h3>
+        {% if people_info %}
+        <div class="table-responsive">
+            <table class="people-table">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>出生年份</th>
+                        <th>逝世年份</th>
+                        <th>职业</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for person in people_info %}
+                    <tr>
+                        <td>{{ person.primaryName }}</td>
+                        <td>{{ person.birthYear }}</td>
+                        <td>{{ person.deathYear }}</td>
+                        <td>{{ person.primaryProfession }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-data">暂无相关人物信息</p>
+        {% endif %}
+    </div>
+
+    <div class="info-section">
+        <h3>评分分布</h3>
+        {% if rating_dist %}
+        <div class="chart-container" style="max-width:600px;">
+            <canvas id="ratingDistChart" style="width:100%;min-height:300px;display:block;margin:0 auto;"></canvas>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var chartCanvas = document.getElementById('ratingDistChart');
+                if (window.ratingDistChartInstance) {
+                    try { window.ratingDistChartInstance.destroy(); } catch(e){}
+                }
+                window.ratingDistChartInstance = new Chart(chartCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: {{ rating_dist.keys()|list|tojson }},
+                        datasets: [{
+                            label: '评分数量',
+                            data: {{ rating_dist.values()|list|tojson }},
+                            backgroundColor: '#4e73df',
+                            borderColor: '#4e73df',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+        {% else %}
+        <p class="no-data">暂无评分数据</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.movie-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    border: 1px solid #dee2e6;
+}
+.detail-row { display: flex; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+.detail-label { font-weight: bold; width: 120px; color: #495057; }
+.detail-value { flex: 1; color: #212529; }
+.admin-actions { margin: 25px 0; display: flex; gap: 10px; }
+.btn { display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; font-size: 14px;}
+.btn.danger { background: #dc3545; }
+.btn:hover { opacity: 0.9; }
+.info-section { margin: 30px 0; padding: 20px; background: #fff; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.05);}
+.info-section h3 { color: #343a40; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; margin-bottom: 20px;}
+.table-responsive { overflow-x: auto;}
+.people-table { width: 100%; border-collapse: collapse; margin-top: 15px;}
+.people-table th, .people-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #dee2e6;}
+.people-table th { background-color: #f8f9fa; font-weight: 600; color: #495057;}
+.people-table tr:hover { background-color: #f8f9fa;}
+.no-data { color: #6c757d; font-style: italic; padding: 20px; text-align: center;}
+.chart-container { margin-top: 20px; width: 80%; max-width: 600px;}
+</style>
+{% endblock %}

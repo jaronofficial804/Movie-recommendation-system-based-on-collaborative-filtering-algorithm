@@ -1,0 +1,317 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<h1>电影推荐系统后台管理</h1>
+<form action="{{ url_for('search') }}" method="GET" class="admin-search-bar">
+    <select name="type" class="search-type">
+        <option value="movie">电影</option>
+        <option value="user">用户</option>
+    </select>
+    <input type="text" name="q" placeholder="搜索..." class="search-input">
+    <button type="submit" class="search-button">搜索</button>
+</form>
+<div class="dashboard">
+    <div class="stats-card"><h3>电影总数</h3><p class="stat-value">{{ stats.total_movies }}</p></div>
+    <div class="stats-card"><h3>用户总数</h3><p class="stat-value">{{ stats.total_users }}</p></div>
+    <div class="stats-card"><h3>评分总数</h3><p class="stat-value">{{ stats.total_ratings }}</p></div>
+    <div class="stats-card"><h3>平均评分</h3><p class="stat-value">{{ "%.2f"|format(stats.avg_rating) }}</p></div>
+    <div class="stats-card"><h3>最早评分</h3><p class="stat-value">{{ stats.first_rating }}</p></div>
+    <div class="stats-card"><h3>最近评分</h3><p class="stat-value">{{ stats.last_rating }}</p></div>
+</div>
+<div class="chart-row">
+    <div class="chart-container"><h2>电影时长分布</h2><canvas id="durationChart"></canvas></div>
+    <div class="chart-container"><h2>评分分布</h2><canvas id="ratingChart"></canvas></div>
+</div>
+<div class="chart-row">
+    <div class="chart-container"><h2>评分时间趋势</h2><canvas id="timeChart"></canvas></div>
+    <div class="chart-container"><h2>活跃用户TOP10</h2><canvas id="userChart"></canvas></div>
+</div>
+<div class="chart-row">
+    <div class="chart-container full-width">
+        <h2>电影类型统计</h2>
+        <div class="chart-wrapper"><canvas id="genreChart"></canvas></div>
+    </div>
+</div>
+
+<style>
+.chart-container, .chart-container.full-width, .dashboard .stats-card {
+    background: rgba(255,255,255,0.90);
+    border-radius: 18px;
+    box-shadow: 0 6px 30px #b0c7ec1a, 0 2px 10px #98d2ff22;
+    padding: 24px 18px 22px 18px;
+    margin-bottom: 32px;
+    border: none;
+    transition: box-shadow .2s;
+}
+.chart-container h2 {
+    font-size: 1.19em;
+    font-weight: 700;
+    letter-spacing: .4px;
+    color: #217aff;
+    margin-bottom: 22px;
+}
+.dashboard .stats-card {
+    display: inline-block;
+    min-width: 120px;
+    margin-right: 18px;
+    margin-bottom: 12px;
+    text-align: center;
+    background: linear-gradient(120deg,#eaf6ff 0,#d1e8ff 90%);
+    box-shadow: 0 3px 15px #afd0fb22;
+}
+.stats-card .stat-value {
+    font-size: 2.1em;
+    font-weight: 800;
+    color: #2675d6;
+    margin-top: 8px;
+    letter-spacing: .3px;
+}
+</style>
+
+<script>
+function makeGradient(ctx, color1, color2) {
+    let grad = ctx.createLinearGradient(0,0,0,240);
+    grad.addColorStop(0, color1);
+    grad.addColorStop(1, color2);
+    return grad;
+}
+
+// ========== 电影时长分布（现代扁平饼图） ==========
+const durationCtx = document.getElementById('durationChart').getContext('2d');
+new Chart(durationCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ duration_labels|tojson }},
+        datasets: [{
+            data: {{ duration_data|tojson }},
+            backgroundColor: [
+                "#6ce6ff", "#3b92f5", "#ffd700", "#fc5185"
+            ],
+            borderWidth: 4,
+            borderColor: "#fff",
+            hoverOffset: 14
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: "#266",
+                    font: { size: 14, weight: 'bold' }
+                }
+            },
+            tooltip: {
+                padding: 12,
+                backgroundColor: "#fff",
+                bodyColor: "#1a2e3a",
+                titleColor: "#217aff",
+                borderColor: "#6ce6ff",
+                borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.raw}部 (${((context.raw/{{ stats.total_movies }})*100).toFixed(1)}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// ========== 评分分布（苹果风渐变圆角柱状图） ==========
+const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+const grad = makeGradient(ratingCtx, "#6ce6ff", "#3b92f5");
+new Chart(ratingCtx, {
+    type: 'bar',
+    data: {
+        labels: ['1星', '2星', '3星', '4星', '5星'],
+        datasets: [{
+            label: '评分数量',
+            data: {{ rating_distribution|tojson }},
+            backgroundColor: grad,
+            borderRadius: 16,
+            borderSkipped: false,
+            barThickness: 38,
+            hoverBackgroundColor: "#3b92f5"
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                padding: 12,
+                backgroundColor: "#fff",
+                borderColor: "#3b92f5",
+                borderWidth: 1,
+                titleColor: "#1d6cbb",
+                bodyColor: "#234",
+                callbacks: {
+                    label: function(context) {
+                        return `${context.dataset.label}: ${context.raw}次 (${((context.raw/{{ stats.total_ratings }})*100).toFixed(1)}%)`;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: "#61aaff", font: { size: 15, weight: 'bold' } }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: "#e8f2fa" },
+                ticks: { color: "#a8c7da", font: { size: 13 } }
+            }
+        }
+    }
+});
+
+// ========== 评分时间趋势（细线现代风） ==========
+const timeCtx = document.getElementById('timeChart').getContext('2d');
+new Chart(timeCtx, {
+    type: 'line',
+    data: {
+        labels: {{ time_labels|tojson }},
+        datasets: [{
+            label: '评分数量',
+            data: {{ time_data|tojson }},
+            borderColor: "#3b92f5",
+            backgroundColor: "rgba(59,146,245,0.08)",
+            pointRadius: 3.5,
+            pointBackgroundColor: "#6ce6ff",
+            pointBorderColor: "#fff",
+            fill: true,
+            tension: 0.32,
+            borderWidth: 3
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: "#217aff",
+                    font: { size: 14, weight: 'bold' }
+                }
+            },
+            tooltip: {
+                backgroundColor: "#fff",
+                bodyColor: "#234",
+                titleColor: "#3b92f5",
+                borderColor: "#6ce6ff",
+                borderWidth: 1
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: "#84b3e8", font: { size: 13 } },
+                grid: { color: "#f2f8fc" }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: "#b8d4f2", font: { size: 12 } },
+                grid: { color: "#f2f8fc" }
+            }
+        }
+    }
+});
+
+// ========== 活跃用户TOP10（现代大圆角横条） ==========
+const userCtx = document.getElementById('userChart').getContext('2d');
+const userGrad = makeGradient(userCtx, "#ffd700", "#fc5185");
+new Chart(userCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ active_users_labels|tojson }},
+        datasets: [{
+            label: '评分数量',
+            data: {{ active_users_data|tojson }},
+            backgroundColor: userGrad,
+            borderRadius: 16,
+            barPercentage: 0.75,
+            categoryPercentage: 0.78
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: "#fff",
+                bodyColor: "#234",
+                titleColor: "#fc5185",
+                borderColor: "#ffd700",
+                borderWidth: 1
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                ticks: { color: "#edab37" },
+                grid: { color: "#f9efe0" }
+            },
+            y: {
+                ticks: { color: "#fc5185", font: { size: 13 } },
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// ========== 电影类型统计（现代厚圆环，渐变柔和色） ==========
+const genreCtx = document.getElementById('genreChart').getContext('2d');
+const genreColors = [
+    "#6ce6ff","#3b92f5","#ffd700","#fc5185","#a390ee","#4bc0c0","#fdbb2d","#22c1c3","#b0db7d"
+];
+new Chart(genreCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ genre_labels|tojson }},
+        datasets: [{
+            data: {{ genre_data|tojson }},
+            backgroundColor: genreColors,
+            borderWidth: 4,
+            borderColor: "#fff",
+            hoverOffset: 18
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "66%",
+        plugins: {
+            legend: {
+                position: 'right',
+                align: 'middle',
+                labels: {
+                    color: "#3864ad",
+                    boxWidth: 14,
+                    padding: 18,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: { size: 14 }
+                }
+            },
+            tooltip: {
+                backgroundColor: "#fff",
+                borderColor: "#3b92f5",
+                borderWidth: 1,
+                titleColor: "#217aff",
+                bodyColor: "#223",
+                callbacks: {
+                    label: function(context) {
+                        const total = {{ stats.total_movies }};
+                        const percentage = (context.raw / total * 100).toFixed(1);
+                        return `${context.label}: ${context.raw}部 (${percentage}%)`;
+                    }
+                }
+            }
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true
+        }
+    }
+});
+</script>
+{% endblock %}

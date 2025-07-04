@@ -1,0 +1,59 @@
+{% extends "admin.html" %}
+
+{% block admin_main %}
+<div class="admin-section" style="max-width:480px;margin:auto;background:#fff;padding:38px 32px 28px 32px;border-radius:14px;box-shadow:0 2px 16px #dae6ff15;">
+    <h2 style="margin-bottom:28px;">编辑电影 - {{ movie.title }} ({{ movie.year }})</h2>
+    <form action="{{ url_for('admin_edit_movie', movie_id=movie.movie_id) }}" method="POST" class="admin-form">
+        <div class="form-group">
+            <label for="title">标题:</label>
+            <input type="text" id="title" name="title" value="{{ movie.title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="year">年份:</label>
+            <input type="number" id="year" name="year" value="{{ movie.year }}" required>
+        </div>
+        <div class="form-group">
+            <label for="duration">时长 (如: 2h 22m):</label>
+            <input type="text" id="duration" name="duration" value="{{ movie.duration }}" required>
+        </div>
+        <div class="form-group">
+            <label for="genre">类型 (多个类型用逗号分隔):</label>
+            <input type="text" id="genre" name="genre" value="{{ movie.genre }}" required>
+        </div>
+        <div class="form-group">
+            <label for="imdb_rating">IMDb评分:</label>
+            <input type="number" step="0.1" id="imdb_rating" name="imdb_rating" value="{{ movie.imdb_rating }}" required>
+        </div>
+        <div class="form-group">
+            <label for="position">排名:</label>
+            <input type="number" id="position" name="position" value="{{ movie.position }}" required>
+        </div>
+        <button type="submit" class="btn" style="width:100%;margin-top:16px;">更新电影信息</button>
+    </form>
+</div>
+<style>
+.admin-form .form-group {
+    margin-bottom: 22px;
+}
+.admin-form label {
+    display: block;
+    margin-bottom: 7px;
+    color: #1878b1;
+    font-weight: bold;
+}
+.admin-form input[type="text"],
+.admin-form input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.2px solid #b5cdea;
+    border-radius: 7px;
+    font-size: 1em;
+    background: #f8fbfe;
+    transition: border .15s;
+}
+.admin-form input:focus {
+    border: 1.4px solid #31afff;
+    background: #fff;
+}
+</style>
+{% endblock %}
